@@ -1,0 +1,19 @@
+# --- Worktrees (commit inside each directory on its branch, not from main) ---
+GoatProject-data/
+GoatProject-modeling/
+GoatProject-viz/
+
+# Dataset lives on branch `data` in GoatProject-data/, not duplicated on main
+data/
+
+# Python / test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# OS
+.DS_Store
+MEMORY
