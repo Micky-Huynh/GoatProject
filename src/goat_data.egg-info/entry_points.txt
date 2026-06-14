@@ -1,0 +1,2 @@
+[console_scripts]
+goat-data-pipeline = goat_data.run_pipeline:main
