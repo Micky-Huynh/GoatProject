@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: goat-viz
+Version: 0.1.0
+Summary: Visualization renderer for the NBA GOAT stat-space index.
+Requires-Python: >=3.11
+Requires-Dist: matplotlib>=3.8
+Requires-Dist: pandas>=2.2
+Requires-Dist: seaborn>=0.13
+Requires-Dist: PyYAML>=6.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2; extra == "dev"

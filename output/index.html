@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GOAT Viz Output</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 24px;
+    }
+    a { color: #58a6ff; }
+    img { max-width: min(100%, 960px); border: 1px solid #30363d; margin: 12px 0; }
+    .muted { color: #8b949e; }
+  </style>
+</head>
+<body>
+  <h1>GOAT Visualization (Step 5)</h1>
+  <p><strong>Publish gate:</strong> FAIL</p>
+  <p class="muted">Layout view only; index rank = public_headline_score from goat_rankings.csv (L2 if publish gate pass, else Mahalanobis or dual table).</p>
+  <p class="muted">Era-adjusted z-scores; full-league baselines by season and position.</p>
+  <h2>Generated Files</h2>
+  <ul><li><a href="posts/goat_rankings.png">goat_rankings.png</a></li>
+<li><a href="posts/pca_scatter.png">pca_scatter.png</a></li>
+<li><a href="posts/similarity_heatmap.png">similarity_heatmap.png</a></li></ul>
+  <h2>Previews</h2>
+  <div><h3>goat_rankings.png</h3><img src="posts/goat_rankings.png" alt="goat_rankings.png"></div><div><h3>pca_scatter.png</h3><img src="posts/pca_scatter.png" alt="pca_scatter.png"></div><div><h3>similarity_heatmap.png</h3><img src="posts/similarity_heatmap.png" alt="similarity_heatmap.png"></div>
+  <details><summary>Validation report (optional)</summary><pre>{&#x27;validator&#x27;: &#x27;xgboost_award_alignment_v1&#x27;, &#x27;non_gating&#x27;: True, &#x27;split&#x27;: {&#x27;train_seasons_end&#x27;: 2014, &#x27;test_seasons_start&#x27;: 2015}, &#x27;primary_metrics&#x27;: {&#x27;test_sample_count&#x27;: 103, &#x27;mvp_vote_share&#x27;: {&#x27;metric&#x27;: &#x27;spearman&#x27;, &#x27;value&#x27;: 0.7055094253683192}, &#x27;all_nba_first&#x27;: {&#x27;metric&#x27;: &#x27;roc_auc&#x27;, &#x27;value&#x27;: 0.8639269406392693}}, &#x27;secondary_metrics&#x27;: {&#x27;career_public_headline_vs_mean_test_prediction_spearman&#x27;: 0.6643356643356644, &#x27;player_count&#x27;: 12}, &#x27;inputs&#x27;: {&#x27;season_vectors&#x27;: &#x27;/Users/mickle/Desktop/Pet Project/GoatProject/GoatProject-data/processed/season_vectors.parquet&#x27;, &#x27;season_labels&#x27;: &#x27;/Users/mickle/Desktop/Pet Project/GoatProject/GoatProject-data/processed/season_labels.parquet&#x27;, &#x27;goat_rankings&#x27;: &#x27;/Users/mickle/Desktop/Pet Project/GoatProject/GoatProject-modeling/output/goat_rankings.csv&#x27;}}</pre></details>
+</body>
+</html>
