@@ -1,0 +1,50 @@
+# Visualization defaults — see ARCHITECTURE.md §9
+
+version: "1.0.0"
+
+theme:
+  name: dark
+  background: "#0d1117"
+  text: "#e6edf3"
+  accent: "#f97316"
+
+export:
+  dpi: 300
+  post_formats:
+    - name: square
+      width: 1080
+      height: 1080
+    - name: landscape
+      width: 1200
+      height: 675
+
+libraries:
+  player_profiles: mplsoccer
+  heatmaps: seaborn
+  pca_static: matplotlib
+  interactive_optional: plotly
+  neighborhood_optional: umap-learn
+
+pca:
+  display_components: 2
+  require_explained_variance_file: true
+  scree_components: 10
+
+optional:
+  umap: false
+  parallel_coordinates: false
+  plotly_interactive: false
+
+profile_features:
+  - bpm_z
+  - vorp_z
+  - per_z
+  - ts_percent_z
+  - usg_percent_z
+  - ast_percent_z
+  - stl_percent_z
+  - blk_percent_z
+
+captions:
+  exploratory_disclaimer: "Layout view only; index rank = public_headline_score from goat_rankings.csv (L2 if publish gate pass, else Mahalanobis or dual table)."
+  era_adjustment: "Era-adjusted z-scores; full-league baselines by season and position."

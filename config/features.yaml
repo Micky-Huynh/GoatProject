@@ -1,0 +1,17 @@
+version: "1.0.0"
+sources:
+  advanced: Advanced.csv
+  per_100: Per 100 Poss.csv
+per_100_features: []
+features:
+  bpm: {source: advanced, column: bpm, orient: 1}
+  vorp: {source: advanced, column: vorp, orient: 1}
+  per: {source: advanced, column: per, orient: 1}
+  ws: {source: advanced, column: ws, orient: 1}
+  ts_percent: {source: advanced, column: ts_percent, orient: 1}
+  usg_percent: {source: advanced, column: usg_percent, orient: 1}
+  ast_percent: {source: advanced, column: ast_percent, orient: 1}
+  stl_percent: {source: advanced, column: stl_percent, orient: 1}
+  blk_percent: {source: advanced, column: blk_percent, orient: 1}
+  tov_percent: {source: advanced, column: tov_percent, orient: -1}
+  x3p_ar: {source: advanced, column: x3p_ar, orient: 1, exclude_when_pre_three_point_line: true}

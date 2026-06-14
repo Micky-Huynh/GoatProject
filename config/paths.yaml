@@ -1,0 +1,12 @@
+goat_root_env: GOAT_ROOT
+paths:
+  allowlist: config/allowlist.yaml
+  raw_data: GoatProject-data/data
+  processed: GoatProject-data/processed
+  model_output: GoatProject-modeling/output
+  viz_output: GoatProject-viz/output
+artifacts:
+  manifest: processed/manifest.json
+  season_vectors: processed/season_vectors.parquet
+  career_vectors: processed/career_vectors.parquet
+  season_labels: processed/season_labels.parquet

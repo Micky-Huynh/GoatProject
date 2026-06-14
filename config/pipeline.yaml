@@ -1,0 +1,28 @@
+version: "1.0.0"
+season_filter:
+  min_minutes: 200
+career_vector:
+  weight_by_minutes: false
+era_adjustment:
+  group_by: [season, pos]
+  baseline_population: full_league
+  min_group_n: 30
+  fallback_ladder:
+    - group_by: [season, pos]
+      min_group_n: 30
+    - group_by: [season]
+      min_group_n: 30
+  record_fallback_in_manifest: true
+missing_features:
+  policy: drop_season_if_core_missing
+  core_features: [bpm, vorp]
+  log_dropped_seasons: true
+validator:
+  train_seasons_end: 2014
+  test_seasons_start: 2015
+manifest:
+  record_config_hashes: true
+  record_raw_csv_checksums: true
+paths:
+  goat_root_env: GOAT_ROOT
+  goat_root_required: false

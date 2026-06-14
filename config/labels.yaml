@@ -1,0 +1,22 @@
+version: "1.0.0"
+join_keys: [player_id, season]
+mvp_vote_share:
+  source_file: Player Award Shares.csv
+  filter: {award: nba mvp}
+  value_column: share
+  output_column: mvp_vote_share
+  default_when_missing: 0.0
+all_nba_first:
+  source_file: End of Season Teams.csv
+  filter: {type: All-NBA, number_tm: 1st}
+  output_column: all_nba_first
+  value: 1
+  default_when_missing: 0
+  aggregation: any
+all_nba_any:
+  source_file: End of Season Teams.csv
+  filter: {type: All-NBA, number_tm: [1st, 2nd, 3rd]}
+  output_column: all_nba_any
+  value: 1
+  default_when_missing: 0
+  aggregation: any

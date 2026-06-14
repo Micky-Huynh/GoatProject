@@ -1,0 +1,46 @@
+# Dual-score ranking + publish gate — see ARCHITECTURE.md §8
+
+version: "1.0.0"
+
+scores:
+  l2:
+    id: l2_career_vector_v1
+    formula: "L2 norm of oriented career vector"
+    default_public_headline: true
+
+  mahalanobis:
+    id: mahalanobis_career_v2
+    formula: "sqrt(z^T Sigma_epsilon^{-1} z) on oriented career vector"
+    sigma_population: full_league_careers
+    regularization_epsilon: 1.0e-4
+    max_condition_number: 1000000
+    default_public_headline: false
+
+  pca_whitened_l2:
+    id: pca_whitened_l2_v1
+    formula: "L2 on first k PCA components (>= 0.90 cumulative variance)"
+    fit_population: full_league_careers
+    cumulative_variance_threshold: 0.90
+    artifact: processed/pca_scoring_components.npy
+    default_public_headline: false
+
+s5_collinearity_block: [bpm, vorp, ws]
+
+publish_gate:
+  min_spearman_l2_vs_mahalanobis: 0.85
+  min_top5_overlap_l2_vs_mahalanobis: 4
+  sensitivity_runs_required:
+    - S1_min_minutes
+    - S2_weighted_career
+    - S3_league_zscore
+    - S4_l2_vs_mahalanobis
+    - S5_collinearity_drop
+  soft_warnings:
+    min_s1_spearman_vs_baseline: 0.80
+    min_s3_top5_overlap: 3
+    note: "Soft warnings do not block v1 publish; recorded in sensitivity_report.json"
+
+public_framing:
+  index_name: "21-player GOAT stat-space index"
+  forbidden_claim: "objective all-time GOAT truth"
+  required_disclaimer: "Curated 21-player composite index; not league-wide or playoff-adjusted (v1). Career index = unweighted mean of era-adjusted seasons (mp>=200), not peak-only."

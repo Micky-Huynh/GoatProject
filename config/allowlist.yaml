@@ -1,0 +1,27 @@
+version: "1.0.0"
+player_count: 21
+players:
+  - name: Kareem Abdul-Jabbar
+  - name: Magic Johnson
+  - name: Larry Bird
+  - name: Charles Barkley
+  - name: Karl Malone
+  - name: Hakeem Olajuwon
+  - name: Moses Malone
+  - name: Michael Jordan
+  - name: Kobe Bryant
+  - name: Tim Duncan
+  - name: Shaquille O'Neal
+  - name: Dirk Nowitzki
+  - name: Kevin Garnett
+  - name: LeBron James
+  - name: Stephen Curry
+  - name: Kevin Durant
+  - name: Giannis Antetokounmpo
+  - name: Nikola Jokic
+  - name: Kawhi Leonard
+  - name: Chris Paul
+  - name: James Harden
+pre_three_point_line_players:
+  - Kareem Abdul-Jabbar
+  - Moses Malone
