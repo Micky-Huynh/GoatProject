@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: goat-model
+Version: 0.1.0
+Summary: Modeling package for NBA GOAT ranking step 2
+Requires-Python: >=3.9
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: pyarrow
+Requires-Dist: PyYAML
+Requires-Dist: xgboost
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Provides-Extra: explain
+Requires-Dist: shap; extra == "explain"

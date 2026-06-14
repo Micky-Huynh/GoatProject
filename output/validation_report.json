@@ -1,0 +1,28 @@
+{
+  "validator": "xgboost_award_alignment_v1",
+  "non_gating": true,
+  "split": {
+    "train_seasons_end": 2014,
+    "test_seasons_start": 2015
+  },
+  "primary_metrics": {
+    "test_sample_count": 103,
+    "mvp_vote_share": {
+      "metric": "spearman",
+      "value": 0.7055094253683192
+    },
+    "all_nba_first": {
+      "metric": "roc_auc",
+      "value": 0.8639269406392693
+    }
+  },
+  "secondary_metrics": {
+    "career_public_headline_vs_mean_test_prediction_spearman": 0.6643356643356644,
+    "player_count": 12
+  },
+  "inputs": {
+    "season_vectors": "GoatProject-data/processed/season_vectors.parquet",
+    "season_labels": "GoatProject-data/processed/season_labels.parquet",
+    "goat_rankings": "GoatProject-modeling/output/goat_rankings.csv"
+  }
+}

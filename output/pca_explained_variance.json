@@ -1,0 +1,39 @@
+{
+  "n_components": 6,
+  "components": [
+    {
+      "component": "PC1",
+      "explained_variance_ratio": 0.37643890599090124,
+      "cumulative_explained_variance": 0.37643890599090124
+    },
+    {
+      "component": "PC2",
+      "explained_variance_ratio": 0.1595719788672948,
+      "cumulative_explained_variance": 0.536010884858196
+    },
+    {
+      "component": "PC3",
+      "explained_variance_ratio": 0.11772415282590544,
+      "cumulative_explained_variance": 0.6537350376841015
+    },
+    {
+      "component": "PC4",
+      "explained_variance_ratio": 0.1125698897037972,
+      "cumulative_explained_variance": 0.7663049273878987
+    },
+    {
+      "component": "PC5",
+      "explained_variance_ratio": 0.08315414299956334,
+      "cumulative_explained_variance": 0.849459070387462
+    },
+    {
+      "component": "PC6",
+      "explained_variance_ratio": 0.06515316449343067,
+      "cumulative_explained_variance": 0.9146122348808927
+    }
+  ],
+  "cumulative_variance": 0.9146122348808927,
+  "pc1_variance_ratio": 0.37643890599090124,
+  "pc2_variance_ratio": 0.1595719788672948,
+  "cumulative_2d": 0.536010884858196
+}

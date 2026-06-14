@@ -1,0 +1,2 @@
+"""NBA GOAT modeling package."""
+
