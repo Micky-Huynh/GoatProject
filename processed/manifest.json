@@ -1,0 +1,195 @@
+{
+  "schema_version": "1.0.0",
+  "pipeline_version": "1.0.0",
+  "created_at": "2026-06-14T20:39:08.346344+00:00",
+  "player_count": 21,
+  "players": [
+    {
+      "player_id": "abdulka01",
+      "display_name": "Kareem Abdul-Jabbar",
+      "season_count": 16
+    },
+    {
+      "player_id": "antetgi01",
+      "display_name": "Giannis Antetokounmpo",
+      "season_count": 13
+    },
+    {
+      "player_id": "barklch01",
+      "display_name": "Charles Barkley",
+      "season_count": 16
+    },
+    {
+      "player_id": "birdla01",
+      "display_name": "Larry Bird",
+      "season_count": 12
+    },
+    {
+      "player_id": "bryanko01",
+      "display_name": "Kobe Bryant",
+      "season_count": 19
+    },
+    {
+      "player_id": "curryst01",
+      "display_name": "Stephen Curry",
+      "season_count": 16
+    },
+    {
+      "player_id": "duncati01",
+      "display_name": "Tim Duncan",
+      "season_count": 19
+    },
+    {
+      "player_id": "duranke01",
+      "display_name": "Kevin Durant",
+      "season_count": 18
+    },
+    {
+      "player_id": "garneke01",
+      "display_name": "Kevin Garnett",
+      "season_count": 21
+    },
+    {
+      "player_id": "hardeja01",
+      "display_name": "James Harden",
+      "season_count": 17
+    },
+    {
+      "player_id": "jamesle01",
+      "display_name": "LeBron James",
+      "season_count": 23
+    },
+    {
+      "player_id": "johnsma02",
+      "display_name": "Magic Johnson",
+      "season_count": 13
+    },
+    {
+      "player_id": "jokicni01",
+      "display_name": "Nikola Joki\u0107",
+      "season_count": 11
+    },
+    {
+      "player_id": "jordami01",
+      "display_name": "Michael Jordan",
+      "season_count": 15
+    },
+    {
+      "player_id": "leonaka01",
+      "display_name": "Kawhi Leonard",
+      "season_count": 14
+    },
+    {
+      "player_id": "malonka01",
+      "display_name": "Karl Malone",
+      "season_count": 19
+    },
+    {
+      "player_id": "malonmo01",
+      "display_name": "Moses Malone",
+      "season_count": 19
+    },
+    {
+      "player_id": "nowitdi01",
+      "display_name": "Dirk Nowitzki",
+      "season_count": 21
+    },
+    {
+      "player_id": "olajuha01",
+      "display_name": "Hakeem Olajuwon",
+      "season_count": 18
+    },
+    {
+      "player_id": "onealsh01",
+      "display_name": "Shaquille O'Neal",
+      "season_count": 19
+    },
+    {
+      "player_id": "paulch01",
+      "display_name": "Chris Paul",
+      "season_count": 21
+    }
+  ],
+  "artifacts": {
+    "season_vectors": "processed/season_vectors.parquet",
+    "career_vectors": "processed/career_vectors.parquet",
+    "season_labels": "processed/season_labels.parquet",
+    "league_career_covariance": "processed/league_career_covariance.npy"
+  },
+  "feature_columns": [
+    "bpm_z",
+    "vorp_z",
+    "per_z",
+    "ws_z",
+    "ts_percent_z",
+    "usg_percent_z",
+    "ast_percent_z",
+    "stl_percent_z",
+    "blk_percent_z",
+    "tov_percent_z",
+    "x3p_ar_z"
+  ],
+  "metadata_columns": [
+    "player_id",
+    "season",
+    "position",
+    "age",
+    "pre_three_point_line"
+  ],
+  "era_adjustment": {
+    "method": "z_score",
+    "group_by": [
+      "season",
+      "pos"
+    ],
+    "baseline_population": "full_league",
+    "fallback_row_count": 1975,
+    "group_levels_used": {
+      "season_pos_groups": 427,
+      "fallback_rows": 1975
+    }
+  },
+  "missing_data_drops": {
+    "dropped_low_minutes": 4903,
+    "dropped_missing_core": 3236
+  },
+  "config_hashes": {
+    "pipeline.yaml": "sha256:13b1ac6653414366a01eb7e2d017ebbb856be9b18ded62dfb4875aaae17eebaa",
+    "features.yaml": "sha256:1d67b64c46561a45a8bfcb5c0ac62b659760679bfce63720e7af1265187321b7",
+    "labels.yaml": "sha256:846cd7870ba1f65bc8241d12e56481ca83be5330a126ae92874b592b153f19e5",
+    "allowlist.yaml": "sha256:ebb26e5600049877cc962858300568bdc2c508c72de4e613f2950f5c85d37f7c"
+  },
+  "raw_csv_checksums": {
+    "Advanced.csv": "sha256:e1616ffe7759c22b014cbbb7c7ce10a591615e7ef1e08cc0dba4d2a02872948d",
+    "All-Star Selections.csv": "sha256:0638a940f8e40aacb2a51e7314e7fe6ba964892cd1323bc5f0ec93a003251069",
+    "Draft Pick History.csv": "sha256:ab4b54439bc5fa81f893879d59992f9066a86b0ea1d419b5dfc08bc7ee82b0a1",
+    "End of Season Teams (Voting).csv": "sha256:5b688eee3a1e6500d0763973f91c1db113d4c9b6a654ef44dd5ebd6331d8faa1",
+    "End of Season Teams.csv": "sha256:865a9f6aace7566ff36316dfcf4b36ffdbc30700f5b69577817d1012e34d0e7c",
+    "Opponent Stats Per 100 Poss.csv": "sha256:26a59d61908af8508fafa461fe991565166707b9e912d0889fc19827ad1ae11a",
+    "Opponent Stats Per Game.csv": "sha256:b34dde57f198f3e926f9c0a232981e0534e2091880880237ec3defca7de03b10",
+    "Opponent Totals.csv": "sha256:23a8277d38a9e0b5c2239e209a26320feb95fdbc352142f848b5ac49d561b91b",
+    "Per 100 Poss.csv": "sha256:c132dc9b958e213d05e1c93fe5cf2b656a613626479b3f3fc4a88e0037a7e175",
+    "Per 36 Minutes.csv": "sha256:649a19bcd01a56103be3d780e2d0f99b8985e6d5ee2c953a6e9982fec7799a55",
+    "Player Award Shares.csv": "sha256:2d7b59bfce52548467d4071c7bb242e6bf098e73e5b2f5d74b904b8d4001e643",
+    "Player Career Info.csv": "sha256:4abda6b51da399a154f7118eed7f0775c73b1335dae5c0d7bc41088da871b9f5",
+    "Player Per Game.csv": "sha256:2deb3c12f6cf2c0f4102e35251cdec6baec52406df82a7d2503ca505c650f393",
+    "Player Play By Play.csv": "sha256:b124e5eb4d361d9cdf7d879926d0aa1cc0eea3b9023f1d441f9d7694c26fae47",
+    "Player Season Info.csv": "sha256:2191b45bfef0536f6d26ba8222f9a81a5cd54aa2aa4495a06b947fd5a0f35e8d",
+    "Player Shooting.csv": "sha256:3a85c8eeee4edd009cede50347dddf880da9df241195f0977dddec0914f6c827",
+    "Player Totals.csv": "sha256:1c081cd7f9c694755ea2210c3426e709540afedc31c1bf781456f3df4b7582b2",
+    "Team Abbrev.csv": "sha256:50923959189fea83f703eda4a28aa4af01797945a6a903bc47ba181b84900e92",
+    "Team Stats Per 100 Poss.csv": "sha256:e7bf50b9dbdf6a9e57fa6f106b565f82f4890028862bd2442ba437848379afa4",
+    "Team Stats Per Game.csv": "sha256:5fbbd4357bb9fadec580346fad9b44f08bc74f46fbafa4a4cec483db6a50a4b6",
+    "Team Summaries.csv": "sha256:0a52b3d5f68ca4e3cbdf9041a8b06f4c8ae55935d62b07e9728d0fcf2d6315c9",
+    "Team Totals.csv": "sha256:0e408f0ae6d0feee45b40b74032610ca8aff76b69d5253ed0bb45e39e945f0bf"
+  },
+  "feature_correlation_max": 0.9194341828162198,
+  "covariance_condition_number": 98.11786725036869,
+  "covariance_player_count": 3265,
+  "label_stats": {
+    "mvp_rows": 251,
+    "all_nba_first_rows": 146,
+    "all_nba_any_rows": 236,
+    "seasons_labeled": 360
+  }
+}
