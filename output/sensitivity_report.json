@@ -1,0 +1,43 @@
+{
+  "baseline": "l2_career_vector_v1",
+  "publish_gate_pass": false,
+  "publish_gate": {
+    "spearman_l2_vs_mahalanobis": 0.8870129870129868,
+    "top5_overlap": 3,
+    "thresholds": {
+      "min_spearman": 0.85,
+      "min_top5_overlap": 4
+    }
+  },
+  "runs": {
+    "S1_min_minutes": {
+      "alt_min_minutes": 400,
+      "spearman_vs_baseline": 0.9857142857142858,
+      "top5_overlap_vs_baseline": 5,
+      "soft_warning": false
+    },
+    "S2_weighted_career": {
+      "spearman_vs_baseline": 0.9766233766233766,
+      "top5_overlap_vs_baseline": 4
+    },
+    "S3_league_zscore": {
+      "spearman_vs_baseline": 0.8077922077922077,
+      "top5_overlap_vs_baseline": 4,
+      "soft_warning": false
+    },
+    "S4_l2_vs_mahalanobis": {
+      "spearman_l2_vs_mahalanobis": 0.8870129870129868,
+      "top5_overlap_l2_vs_mahalanobis": 3
+    },
+    "S5_collinearity_drop": {
+      "dropped_features": [
+        "bpm",
+        "vorp",
+        "ws"
+      ],
+      "kept_feature_count": 8,
+      "spearman_vs_baseline": 0.9285714285714285,
+      "top5_overlap_vs_baseline": 4
+    }
+  }
+}
