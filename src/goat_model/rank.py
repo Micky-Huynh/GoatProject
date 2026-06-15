@@ -61,7 +61,7 @@ def build_rankings(
     covariance: np.ndarray,
     full_league_careers: pd.DataFrame,
     scoring_cfg: dict,
-) -> tuple[pd.DataFrame, dict]:
+) -> pd.DataFrame:
     target_values = np.nan_to_num(career_vectors[z_cols].to_numpy(dtype=float), nan=0.0)
     full_values = np.nan_to_num(full_league_careers[z_cols].to_numpy(dtype=float), nan=0.0)
     l2_values = np.linalg.norm(target_values, axis=1)
@@ -86,16 +86,5 @@ def build_rankings(
     rankings["rank_mahalanobis"] = _rank_ascending(rankings["score_mahalanobis"])
     rankings["rank_pca_whitened_l2"] = _rank_ascending(rankings["score_pca_whitened_l2"])
 
-    min_spearman = float(scoring_cfg["publish_gate"]["min_spearman_l2_vs_mahalanobis"])
-    min_top5_overlap = int(scoring_cfg["publish_gate"]["min_top5_overlap_l2_vs_mahalanobis"])
-    gate = compute_publish_gate(rankings, min_spearman=min_spearman, min_top5_overlap=min_top5_overlap)
-
-    if gate["pass"]:
-        rankings["public_headline_score"] = rankings["score_l2"]
-        rankings["rank_method_primary"] = scoring_cfg["scores"]["l2"]["id"]
-    else:
-        rankings["public_headline_score"] = rankings["score_mahalanobis"]
-        rankings["rank_method_primary"] = scoring_cfg["scores"]["mahalanobis"]["id"]
-
-    rankings = rankings.sort_values("rank_l2", kind="mergesort").reset_index(drop=True)
-    return rankings, gate
+    rankings = rankings.sort_values("rank_pca_whitened_l2", kind="mergesort").reset_index(drop=True)
+    return rankings

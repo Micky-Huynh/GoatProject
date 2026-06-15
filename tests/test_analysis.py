@@ -30,7 +30,7 @@ def test_analysis_artifacts_are_written() -> None:
 def test_similarity_matrix_shape_and_diagonal() -> None:
     paths = run(_default_goat_root())
     similarity = pd.read_csv(paths["similarity_matrix"], index_col="player_id")
-    assert similarity.shape == (21, 21)
+    assert similarity.shape == (100, 100)
     assert similarity.index.tolist() == similarity.columns.tolist()
     assert np.allclose(similarity.values.diagonal(), 1.0, atol=1e-12)
 
@@ -39,7 +39,7 @@ def test_pca_variance_payload_and_coordinates() -> None:
     paths = run(_default_goat_root())
     coords = pd.read_csv(paths["pca_coordinates"])
     assert {"player_id", "display_name", "PC1", "PC2"}.issubset(coords.columns)
-    assert len(coords) == 21
+    assert len(coords) == 100
 
     with paths["pca_explained_variance"].open(encoding="utf-8") as handle:
         payload = json.load(handle)
@@ -62,4 +62,4 @@ def test_uniqueness_fields() -> None:
         "uniqueness",
     }
     assert expected.issubset(uniqueness.columns)
-    assert len(uniqueness) == 21
+    assert len(uniqueness) == 100

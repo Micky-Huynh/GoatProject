@@ -15,6 +15,7 @@ from goat_model.io import (
     z_columns_from_manifest,
 )
 from goat_model.rank import build_rankings
+from goat_model.playoff_scores import apply_playoff_and_clutch_scores, load_playoff_context, load_season_labels
 from goat_model.sensitivity import run_sensitivity
 
 
@@ -29,12 +30,21 @@ def run(goat_root: Path | None = None) -> tuple:
     full_seasons_default, _ = build_full_league_season_vectors(ctx, group_mode="season_pos_fallback")
     full_league_careers = aggregate_career_vectors(full_seasons_default, z_cols=z_cols, weight_by_minutes=False)
 
-    rankings, _ = build_rankings(
+    rankings = build_rankings(
         career_vectors=career_vectors,
         z_cols=z_cols,
         covariance=covariance,
         full_league_careers=full_league_careers,
         scoring_cfg=ctx.scoring_cfg,
+    )
+    playoff_context = load_playoff_context(ctx)
+    season_labels = load_season_labels(ctx)
+    rankings = apply_playoff_and_clutch_scores(
+        ctx,
+        rankings,
+        playoff_context,
+        season_labels,
+        career_vectors,
     )
     sensitivity_report = run_sensitivity(
         ctx=ctx,
@@ -53,9 +63,10 @@ def run(goat_root: Path | None = None) -> tuple:
 
 def main() -> None:
     rankings, sensitivity_report = run()
-    top_five = rankings.nsmallest(5, "rank_l2")[["rank_l2", "display_name", "score_l2"]]
+    top_five = rankings.nsmallest(5, "rank_pca_whitened_l2")[["rank_pca_whitened_l2", "display_name", "score_pca_whitened_l2", "championships"]]
     print(top_five.to_string(index=False))
-    print(f"publish_gate_pass={sensitivity_report['publish_gate_pass']}")
+    crown = rankings.nsmallest(1, "rank_pca_whitened_l2")[["display_name", "score_pca_whitened_l2"]]
+    print("pca_crown:", crown.to_string(index=False))
 
 
 if __name__ == "__main__":

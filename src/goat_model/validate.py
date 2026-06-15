@@ -126,9 +126,9 @@ def run_validation(goat_root: Path | None = None, include_shap: bool = False) ->
         .mean()
         .rename(columns={"mvp_pred": "mean_test_mvp_prediction"})
     )
-    career_eval = rankings[["player_id", "public_headline_score"]].merge(career_preds, on="player_id", how="inner")
+    career_eval = rankings[["player_id", "score_goat_index"]].merge(career_preds, on="player_id", how="inner")
     career_spearman = _safe_spearman(
-        career_eval["public_headline_score"], career_eval["mean_test_mvp_prediction"]
+        career_eval["score_goat_index"], career_eval["mean_test_mvp_prediction"]
     )
 
     report: dict[str, Any] = {
@@ -150,7 +150,7 @@ def run_validation(goat_root: Path | None = None, include_shap: bool = False) ->
             },
         },
         "secondary_metrics": {
-            "career_public_headline_vs_mean_test_prediction_spearman": career_spearman,
+            "career_goat_index_vs_mean_test_prediction_spearman": career_spearman,
             "player_count": int(career_eval["player_id"].nunique()),
         },
         "inputs": {

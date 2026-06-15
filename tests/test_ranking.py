@@ -11,9 +11,9 @@ def _default_goat_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-def test_rankings_have_21_players_and_required_columns() -> None:
+def test_rankings_have_allowlist_players_and_required_columns() -> None:
     rankings, _ = run(_default_goat_root())
-    assert len(rankings) == 21
+    assert len(rankings) == 100
     required = {
         "player_id",
         "display_name",
@@ -23,8 +23,10 @@ def test_rankings_have_21_players_and_required_columns() -> None:
         "rank_l2",
         "rank_mahalanobis",
         "rank_pca_whitened_l2",
-        "public_headline_score",
-        "rank_method_primary",
+        "score_goat_index",
+        "rank_goat_index",
+        "championships",
+        "clutch_penalty",
     }
     assert required.issubset(rankings.columns)
 
@@ -39,7 +41,6 @@ def test_ranking_rerun_is_deterministic() -> None:
         rtol=0,
         atol=1e-12,
     )
-    assert report_a["publish_gate_pass"] == report_b["publish_gate_pass"]
     assert report_a["publish_gate"] == report_b["publish_gate"]
 
 
