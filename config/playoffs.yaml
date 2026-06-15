@@ -1,0 +1,62 @@
+# Playoff context, team-strength PCA, and championship/clutch scoring
+
+version: "1.0.0"
+
+finals_results_file: finals_results.csv
+
+team_snapshot:
+  summary_features:
+    - srs
+    - o_rtg
+    - d_rtg
+    - n_rtg
+    - mov
+    - pace
+    - ts_percent
+    - e_fg_percent
+    - tov_percent
+    - orb_percent
+  per_game_features:
+    - pts_per_game
+    - ast_per_game
+    - trb_per_game
+    - fg_percent
+    - stl_per_game
+    - blk_per_game
+  pca:
+    cumulative_variance_threshold: 0.90
+    strength_metric: l2_norm
+
+championship:
+  ring_base_credit: 1.0
+  finals_loss_base: 0.65
+  underdog_weight: 0.35
+  favorite_penalty: 0.25
+
+repeat_titles:
+  # Extra credit beyond raw ring count for back-to-back and 3+ peat runs.
+  consecutive_bonus_per_ring: 0.75
+  dynasty_threshold: 3
+  dynasty_bonus: 1.5
+
+clutch_consensus:
+  impact_features: [bpm_z, vorp_z, per_z, ws_z]
+  playoff_performance_weight: 1.25
+  ring_weight: 2.0
+  finals_appearance_weight: 0.75
+  finals_loss_weight: 0.35
+  mvp_vote_weight: 3.0
+  all_nba_first_weight: 0.8
+  consensus_dampening: 0.45
+  penalty_weight: 0.55
+
+goat_index:
+  pca_weight: 1.0
+  championship_weight: 0.35
+  clutch_penalty_weight: 0.45
+
+playoff_performance:
+  ring_depth: 3.0
+  finals_depth: 2.0
+  playoff_depth: 1.0
+  underdog_depth_bonus: 0.15
