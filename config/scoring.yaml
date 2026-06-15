@@ -1,4 +1,4 @@
-# Dual-score ranking + publish gate — see ARCHITECTURE.md §8
+# Multi-score ranking with playoff context — see ARCHITECTURE.md §8
 
 version: "1.0.0"
 
@@ -41,6 +41,6 @@ publish_gate:
     note: "Soft warnings do not block v1 publish; recorded in sensitivity_report.json"
 
 public_framing:
-  index_name: "21-player GOAT stat-space index"
+  index_name: "100-player GOAT stat-space index"
   forbidden_claim: "objective all-time GOAT truth"
-  required_disclaimer: "Curated 21-player composite index; not league-wide or playoff-adjusted (v1). Career index = unweighted mean of era-adjusted seasons (mp>=200), not peak-only."
+  required_disclaimer: "Curated 100-player composite index with team-weighted titles and clutch/consensus adjustment. Career index = unweighted mean of era-adjusted seasons (mp>=200), not peak-only."

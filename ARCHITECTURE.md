@@ -247,6 +247,14 @@ Pipeline provenance and QA metrics. Required fields:
     "all_nba_first_rows": 0,
     "all_nba_any_rows": 0,
     "seasons_labeled": 0
+  },
+  "vector_space": {
+    "ambient_space": "R^d_standard",
+    "field": "R",
+    "feature_dimension": 11,
+    "embeddings_are_subspace": false,
+    "embedding_map": "Phi: player career data -> bar{z}_i in R^d (nonlinear pipeline)",
+    "x3p_ar_career_coordinate": "mean of finite season x3p_ar_z values (skip-NA)"
   }
 }
 ```
@@ -372,6 +380,57 @@ When \(\sigma_{s,g,j} = 0\), set \(z_{i,s,j} = 0\) and log in manifest/tests.
 | `pca_whitened_l2_v1` | \(\|W_i\|_2\) where \(W_i\) are coordinates on first \(k\) PCs (≥90% cumulative variance) |
 
 \(\Sigma\) is estimated from **full-league career vectors** (same season filter and feature set), with ridge \(\Sigma_\epsilon = \Sigma + \epsilon I\), \(\epsilon\) from `config/scoring.yaml`. **PCA fit and whitening** also use **full-league** career matrices — not the 21-player subset.
+
+### 7.0.1 Vector space structure (formal)
+
+**Ambient space.** Fix \(d = 11\) feature dimensions from `config/features.yaml`. Define
+
+\[
+V = \mathbb{R}^d
+\]
+
+with the usual component-wise addition and scalar multiplication over \(\mathbb{R}\). This **satisfies all vector space axioms**. Ordered feature basis: `bpm_z`, `vorp_z`, `per_z`, `ws_z`, `ts_percent_z`, `usg_percent_z`, `ast_percent_z`, `stl_percent_z`, `blk_percent_z`, `tov_percent_z`, `x3p_ar_z`.
+
+**Embedding map (nonlinear).** For each player \(i\), the data pipeline defines an embedding
+
+\[
+\Phi(i) = \bar{z}_i \in V
+\]
+
+via full-league z-scoring, orientation, season filters, and unweighted career aggregation (§7.0–§7.1). \(\Phi\) is **not** a linear map from raw stat tables to \(V\).
+
+**Allowlist subset (not a subspace).** Let
+
+\[
+E_{\text{allow}} = \{\Phi(i) : i \in \text{allowlist}\} \subset V
+\]
+
+with \(|E_{\text{allow}}| = 21\). In general \(E_{\text{allow}}\) is **not** closed under addition or scalar multiplication and is **therefore not a vector space**. Example falsification: \(\bar{z}_a + \bar{z}_b\) is in \(V\) but is not \(\Phi(j)\) for any real player \(j\) produced by the pipeline.
+
+**Scoring maps (norms, not vector-space operations).** Index scores are functionals on \(V\):
+
+| Map | Definition | Linear? |
+|-----|------------|---------|
+| L2 | \(\|\bar{z}_i\|_2\) | No (norm) |
+| Mahalanobis | \(\sqrt{\bar{z}_i^\top \Sigma_\epsilon^{-1}\bar{z}_i}\) | No (induced norm) |
+| PCA-whitened L2 | \(\|W_i\|_2\) after fixed PCA basis | No (norm after linear projection) |
+
+When \(\Sigma_\epsilon \succ 0\), Mahalanobis induces an inner product \(\langle u,v\rangle_M = u^\top \Sigma_\epsilon^{-1} v\) on \(V\); \((V,\langle\cdot,\cdot\rangle_M)\) is a **real inner product space** (hence a vector space **plus** metric structure). The inner product is **empirical** (fit on full-league careers) and may change when league data or config changes.
+
+**Ranking.** Sorting by score is an order on \(\mathbb{R}\), not a vector-space operation. Never describe rank as closed under \(+\) or \(\cdot\).
+
+**Public language (required).**
+
+| Allowed | Forbidden |
+|---------|-----------|
+| "Career embedding in \(\mathbb{R}^{11}\)" | "Players form a vector space" |
+| "Norm / distance from origin in stat space" | "Adding players corresponds to vector addition" |
+| "Linear-algebra views (PCA, cosine) of the same space" | "Pipeline is a linear operator on careers" |
+
+**Manifest contract (§6.1).** `processed/manifest.json` must record `vector_space.feature_dimension`, `vector_space.ambient_space`, and `vector_space.embeddings_are_subspace: false`. Pipeline tests assert every allowlist career row has exactly \(d\) finite coordinates in `feature_columns`.
+
+**`x3p_ar` in \(V\).** Pre-1979 seasons for flagged players set raw `x3p_ar` to NA before z-scoring; affected `x3p_ar_z` may be NA at season level. Career coordinate `x3p_ar_z` is the **unweighted mean of finite season values only** (pandas `mean` skip-NA). All 21 career rows must still expose **finite** values in every `feature_columns` entry after aggregation.
+
 
 ### 7.1 Pipeline rules
 
@@ -653,6 +712,7 @@ GoatProject-viz/                      # viz branch
 7. Same inputs + config hashes → identical `goat_rankings.csv` order
 8. PCA figures require `pca_explained_variance.json` (see §9.4)
 9. XGBoost validates; it does not replace L2/Mahalanobis as primary rank
+10. `manifest.vector_space.feature_dimension == len(feature_columns)` and every allowlist career row has finite values in all `feature_columns` (see §7.0.1)
 
 ---
 

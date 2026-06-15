@@ -22,6 +22,7 @@ from goat_data.era_adjust import era_adjust
 from goat_data.labels import build_season_labels
 from goat_data.load import load_advanced_seasons
 from goat_data.players import resolve_allowlist
+from goat_data.playoffs import build_playoff_context
 
 
 def _filter_seasons(frame: pd.DataFrame, pipeline_cfg: dict) -> tuple[pd.DataFrame, dict[str, int]]:
@@ -93,6 +94,13 @@ def run(paths=None) -> dict:
         allowlist.display_names,
     )
 
+    playoff_result = build_playoff_context(
+        goat_paths,
+        allowlist.player_ids,
+        allowlist.display_names,
+    )
+    playoff_context = playoff_result.player_context
+
     labels, label_stats = build_season_labels(
         goat_paths,
         season_vectors[["player_id", "season"]],
@@ -110,6 +118,7 @@ def run(paths=None) -> dict:
     season_vectors.to_parquet(goat_paths.processed / "season_vectors.parquet", index=False)
     career_vectors.to_parquet(goat_paths.processed / "career_vectors.parquet", index=False)
     labels.to_parquet(goat_paths.processed / "season_labels.parquet", index=False)
+    playoff_context.to_parquet(goat_paths.processed / "playoff_context.parquet", index=False)
 
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -121,6 +130,7 @@ def run(paths=None) -> dict:
             "season_vectors": "processed/season_vectors.parquet",
             "career_vectors": "processed/career_vectors.parquet",
             "season_labels": "processed/season_labels.parquet",
+            "playoff_context": "processed/playoff_context.parquet",
             "league_career_covariance": "processed/league_career_covariance.npy",
         },
         "feature_columns": z_cols,
@@ -143,6 +153,14 @@ def run(paths=None) -> dict:
             "all_nba_first_rows": label_stats.all_nba_first_rows,
             "all_nba_any_rows": label_stats.all_nba_any_rows,
             "seasons_labeled": label_stats.seasons_labeled,
+        },
+        "vector_space": {
+            "ambient_space": "R^d_standard",
+            "field": "R",
+            "feature_dimension": len(z_cols),
+            "embeddings_are_subspace": False,
+            "embedding_map": "Phi: player career data -> bar{z}_i in R^d (nonlinear pipeline)",
+            "x3p_ar_career_coordinate": "mean of finite season x3p_ar_z values (skip-NA)",
         },
     }
 

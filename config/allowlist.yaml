@@ -1,27 +1,152 @@
-version: "1.0.0"
-player_count: 21
+version: 1.0.0
+player_count: 100
+default_viz_players:
+- name: Kareem Abdul-Jabbar
+- name: Magic Johnson
+- name: Larry Bird
+- name: Charles Barkley
+- name: Karl Malone
+- name: Hakeem Olajuwon
+- name: Moses Malone
+- name: Michael Jordan
+- name: Kobe Bryant
+- name: Tim Duncan
+- name: Shaquille O'Neal
+- name: Dirk Nowitzki
+- name: Kevin Garnett
+- name: LeBron James
+- name: Stephen Curry
+- name: Kevin Durant
+- name: Giannis Antetokounmpo
+- name: Nikola Jokic
+- name: Kawhi Leonard
+- name: Chris Paul
+- name: James Harden
 players:
-  - name: Kareem Abdul-Jabbar
-  - name: Magic Johnson
-  - name: Larry Bird
-  - name: Charles Barkley
-  - name: Karl Malone
-  - name: Hakeem Olajuwon
-  - name: Moses Malone
-  - name: Michael Jordan
-  - name: Kobe Bryant
-  - name: Tim Duncan
-  - name: Shaquille O'Neal
-  - name: Dirk Nowitzki
-  - name: Kevin Garnett
-  - name: LeBron James
-  - name: Stephen Curry
-  - name: Kevin Durant
-  - name: Giannis Antetokounmpo
-  - name: Nikola Jokic
-  - name: Kawhi Leonard
-  - name: Chris Paul
-  - name: James Harden
+- name: Kareem Abdul-Jabbar
+- name: Magic Johnson
+- name: Larry Bird
+- name: Charles Barkley
+- name: Karl Malone
+- name: Hakeem Olajuwon
+- name: Moses Malone
+- name: Michael Jordan
+- name: Kobe Bryant
+- name: Tim Duncan
+- name: Shaquille O'Neal
+- name: Dirk Nowitzki
+- name: Kevin Garnett
+- name: LeBron James
+- name: Stephen Curry
+- name: Kevin Durant
+- name: Giannis Antetokounmpo
+- name: Nikola Jokic
+- name: Kawhi Leonard
+- name: Chris Paul
+- name: James Harden
+- name: Oscar Robertson
+- name: Jerry West
+- name: Julius Erving
+- name: John Stockton
+- name: Isiah Thomas
+- name: Dwyane Wade
+- name: Allen Iverson
+- name: Russell Westbrook
+- name: Steve Nash
+- name: Jason Kidd
+- name: Gary Payton
+- name: Clyde Drexler
+- name: Scottie Pippen
+- name: David Robinson
+- name: Patrick Ewing
+- name: Rick Barry
+- name: Wes Unseld
+- name: Willis Reed
+- name: Walt Frazier
+- name: Tiny Archibald
+- name: Pete Maravich
+- name: George Gervin
+- name: Dennis Rodman
+- name: Reggie Miller
+- name: Ray Allen
+- name: Paul Pierce
+- name: Vince Carter
+- name: Tracy McGrady
+- name: Pau Gasol
+- name: Anthony Davis
+- name: Joel Embiid
+- name: Damian Lillard
+- name: Kyrie Irving
+- name: Paul George
+- name: Jimmy Butler
+- name: Devin Booker
+- name: Luka Dončić
+- name: Jayson Tatum
+- name: Shai Gilgeous-Alexander
+- name: Carmelo Anthony
+- name: Dwight Howard
+- name: Yao Ming
+- name: Manu Ginobili
+- name: Tony Parker
+- name: Chauncey Billups
+- name: Ben Wallace
+- name: Robert Parish
+- name: Kevin McHale
+- name: Bill Walton
+- name: Artis Gilmore
+- name: Dominique Wilkins
+- name: Alex English
+- name: Adrian Dantley
+- name: Alonzo Mourning
+- name: Sidney Moncrief
+- name: Mark Price
+- name: Bernard King
+- name: Grant Hill
+- name: Chris Bosh
+- name: Dikembe Mutombo
+- name: Bob Lanier
+- name: Dave Cowens
+- name: John Havlicek
+- name: Elvin Hayes
+- name: Nate Thurmond
+- name: Jerry Lucas
+- name: Mitch Richmond
+- name: Chris Webber
+- name: Amar'e Stoudemire
+- name: James Worthy
+- name: Bob McAdoo
+- name: LaMarcus Aldridge
+- name: Joe Johnson
+- name: Shawn Marion
+- name: Rajon Rondo
+- name: Kemba Walker
+- name: Brad Daugherty
+- name: Zach Randolph
+- name: Antawn Jamison
 pre_three_point_line_players:
-  - Kareem Abdul-Jabbar
-  - Moses Malone
+- Kareem Abdul-Jabbar
+- Moses Malone
+- Oscar Robertson
+- Jerry West
+- Julius Erving
+- Rick Barry
+- Wes Unseld
+- Willis Reed
+- Walt Frazier
+- Tiny Archibald
+- Pete Maravich
+- George Gervin
+- Artis Gilmore
+- Bob Lanier
+- Dave Cowens
+- John Havlicek
+- Elvin Hayes
+- Nate Thurmond
+- Jerry Lucas
+- Paul Arizin
+- Dolph Schayes
+- Tom Heinsohn
+- Bob Davies
+- World B. Free
+- Dave Bing
+- Billy Cunningham

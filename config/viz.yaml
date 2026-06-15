@@ -17,6 +17,17 @@ export:
     - name: landscape
       width: 1200
       height: 675
+  charts:
+    rankings:
+      width: 1600
+      min_height: 1400
+      height_per_player: 72
+    pca:
+      width: 1400
+      height: 1200
+    heatmap:
+      width: 1500
+      height: 1400
 
 libraries:
   player_profiles: mplsoccer
@@ -33,7 +44,43 @@ pca:
 optional:
   umap: false
   parallel_coordinates: false
-  plotly_interactive: false
+  plotly_interactive: true
+
+embed_3d:
+  enabled: true
+  # Default visible set comes from config/allowlist.yaml -> default_viz_players
+  components: [PC1, PC2, PC3]
+  marker_size_metric: impact_z
+  show_origin_lines: true
+  show_labels: false
+  aspect_mode: cube
+  orb_radius_min: 0.08
+  orb_radius_max: 0.16
+
+player_images:
+  cache_dir: assets/players
+  url_template: "https://www.basketball-reference.com/req/202106291/images/players/{player_id}.jpg"
+
+skill_aspects:
+  overall:
+    label: Overall impact
+    features: [bpm_z, vorp_z, per_z, ws_z]
+  scoring:
+    label: Scoring
+    features: [ts_percent_z, usg_percent_z, x3p_ar_z]
+  playmaking:
+    label: Playmaking
+    features: [ast_percent_z]
+  defense:
+    label: Defense
+    features: [stl_percent_z, blk_percent_z]
+  ball_security:
+    label: Ball security
+    features: [tov_percent_z]
+  championship_legacy:
+    label: Repeated titles
+    source: rankings
+    field: repeat_titles_score
 
 profile_features:
   - bpm_z
@@ -46,5 +93,5 @@ profile_features:
   - blk_percent_z
 
 captions:
-  exploratory_disclaimer: "Layout view only; index rank = public_headline_score from goat_rankings.csv (L2 if publish gate pass, else Mahalanobis or dual table)."
+  exploratory_disclaimer: "Exploratory layout only. Gold crown = #1 overall impact among currently visible players (mean BPM/VORP/PER/WS z). Bar chart uses score_goat_index (PCA + team-weighted titles + clutch/consensus adjustment)."
   era_adjustment: "Era-adjusted z-scores; full-league baselines by season and position."
