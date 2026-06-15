@@ -67,7 +67,7 @@ def test_zero_std_fallback():
 
 def test_pipeline_outputs(paths):
     manifest = run(paths.root)
-    assert manifest["player_count"] == 21
+    assert manifest["player_count"] == 100
 
     processed = paths.processed
     assert (processed / "career_vectors.parquet").exists()
@@ -75,7 +75,7 @@ def test_pipeline_outputs(paths):
     assert (processed / "league_career_covariance.npy").exists()
 
     career = pd.read_parquet(processed / "career_vectors.parquet")
-    assert len(career) == 21
+    assert len(career) == manifest["player_count"]
 
     with (processed / "manifest.json").open(encoding="utf-8") as handle:
         saved = json.load(handle)
@@ -85,3 +85,5 @@ def test_pipeline_outputs(paths):
     assert "covariance_condition_number" in saved
     assert "label_stats" in saved
     assert saved["era_adjustment"]["fallback_row_count"] >= 0
+    assert "vector_space" in saved
+    assert saved["vector_space"]["feature_dimension"] == len(saved["feature_columns"])

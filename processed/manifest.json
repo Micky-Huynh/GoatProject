@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
   "pipeline_version": "1.0.0",
-  "created_at": "2026-06-14T20:39:08.346344+00:00",
-  "player_count": 21,
+  "created_at": "2026-06-15T03:04:51.740426+00:00",
+  "player_count": 100,
   "players": [
     {
       "player_id": "abdulka01",
@@ -10,9 +10,29 @@
       "season_count": 16
     },
     {
+      "player_id": "aldrila01",
+      "display_name": "LaMarcus Aldridge",
+      "season_count": 16
+    },
+    {
+      "player_id": "allenra02",
+      "display_name": "Ray Allen",
+      "season_count": 18
+    },
+    {
       "player_id": "antetgi01",
       "display_name": "Giannis Antetokounmpo",
       "season_count": 13
+    },
+    {
+      "player_id": "anthoca01",
+      "display_name": "Carmelo Anthony",
+      "season_count": 19
+    },
+    {
+      "player_id": "architi01",
+      "display_name": "Tiny Archibald",
+      "season_count": 10
     },
     {
       "player_id": "barklch01",
@@ -20,9 +40,29 @@
       "season_count": 16
     },
     {
+      "player_id": "barryri01",
+      "display_name": "Rick Barry",
+      "season_count": 7
+    },
+    {
+      "player_id": "billuch01",
+      "display_name": "Chauncey Billups",
+      "season_count": 17
+    },
+    {
       "player_id": "birdla01",
       "display_name": "Larry Bird",
       "season_count": 12
+    },
+    {
+      "player_id": "bookede01",
+      "display_name": "Devin Booker",
+      "season_count": 11
+    },
+    {
+      "player_id": "boshch01",
+      "display_name": "Chris Bosh",
+      "season_count": 13
     },
     {
       "player_id": "bryanko01",
@@ -30,9 +70,49 @@
       "season_count": 19
     },
     {
+      "player_id": "butleji01",
+      "display_name": "Jimmy Butler",
+      "season_count": 15
+    },
+    {
+      "player_id": "cartevi01",
+      "display_name": "Vince Carter",
+      "season_count": 22
+    },
+    {
+      "player_id": "cowenda01",
+      "display_name": "Dave Cowens",
+      "season_count": 8
+    },
+    {
       "player_id": "curryst01",
       "display_name": "Stephen Curry",
       "season_count": 16
+    },
+    {
+      "player_id": "dantlad01",
+      "display_name": "Adrian Dantley",
+      "season_count": 14
+    },
+    {
+      "player_id": "daughbr01",
+      "display_name": "Brad Daugherty",
+      "season_count": 8
+    },
+    {
+      "player_id": "davisan02",
+      "display_name": "Anthony Davis",
+      "season_count": 14
+    },
+    {
+      "player_id": "doncilu01",
+      "display_name": "Luka Don\u010di\u0107",
+      "season_count": 8
+    },
+    {
+      "player_id": "drexlcl01",
+      "display_name": "Clyde Drexler",
+      "season_count": 15
     },
     {
       "player_id": "duncati01",
@@ -45,9 +125,64 @@
       "season_count": 18
     },
     {
+      "player_id": "embiijo01",
+      "display_name": "Joel Embiid",
+      "season_count": 10
+    },
+    {
+      "player_id": "englial01",
+      "display_name": "Alex English",
+      "season_count": 15
+    },
+    {
+      "player_id": "ervinju01",
+      "display_name": "Julius Erving",
+      "season_count": 14
+    },
+    {
+      "player_id": "ewingpa01",
+      "display_name": "Patrick Ewing",
+      "season_count": 17
+    },
+    {
+      "player_id": "fraziwa01",
+      "display_name": "Walt Frazier",
+      "season_count": 6
+    },
+    {
       "player_id": "garneke01",
       "display_name": "Kevin Garnett",
       "season_count": 21
+    },
+    {
+      "player_id": "gasolpa01",
+      "display_name": "Pau Gasol",
+      "season_count": 18
+    },
+    {
+      "player_id": "georgpa01",
+      "display_name": "Paul George",
+      "season_count": 15
+    },
+    {
+      "player_id": "gervige01",
+      "display_name": "George Gervin",
+      "season_count": 13
+    },
+    {
+      "player_id": "gilgesh01",
+      "display_name": "Shai Gilgeous-Alexander",
+      "season_count": 8
+    },
+    {
+      "player_id": "gilmoar01",
+      "display_name": "Artis Gilmore",
+      "season_count": 15
+    },
+    {
+      "player_id": "ginobma01",
+      "display_name": "Manu Gin\u00f3bili",
+      "season_count": 16
     },
     {
       "player_id": "hardeja01",
@@ -55,9 +190,49 @@
       "season_count": 17
     },
     {
+      "player_id": "havlijo01",
+      "display_name": "John Havlicek",
+      "season_count": 5
+    },
+    {
+      "player_id": "hayesel01",
+      "display_name": "Elvin Hayes",
+      "season_count": 11
+    },
+    {
+      "player_id": "hillgr01",
+      "display_name": "Grant Hill",
+      "season_count": 17
+    },
+    {
+      "player_id": "howardw01",
+      "display_name": "Dwight Howard",
+      "season_count": 18
+    },
+    {
+      "player_id": "irvinky01",
+      "display_name": "Kyrie Irving",
+      "season_count": 14
+    },
+    {
+      "player_id": "iversal01",
+      "display_name": "Allen Iverson",
+      "season_count": 14
+    },
+    {
       "player_id": "jamesle01",
       "display_name": "LeBron James",
       "season_count": 23
+    },
+    {
+      "player_id": "jamisan01",
+      "display_name": "Antawn Jamison",
+      "season_count": 16
+    },
+    {
+      "player_id": "johnsjo02",
+      "display_name": "Joe Johnson",
+      "season_count": 17
     },
     {
       "player_id": "johnsma02",
@@ -75,9 +250,34 @@
       "season_count": 15
     },
     {
+      "player_id": "kiddja01",
+      "display_name": "Jason Kidd",
+      "season_count": 19
+    },
+    {
+      "player_id": "kingbe01",
+      "display_name": "Bernard King",
+      "season_count": 14
+    },
+    {
+      "player_id": "laniebo01",
+      "display_name": "Bob Lanier",
+      "season_count": 11
+    },
+    {
       "player_id": "leonaka01",
       "display_name": "Kawhi Leonard",
       "season_count": 14
+    },
+    {
+      "player_id": "lillada01",
+      "display_name": "Damian Lillard",
+      "season_count": 13
+    },
+    {
+      "player_id": "lucasje01",
+      "display_name": "Jerry Lucas",
+      "season_count": 1
     },
     {
       "player_id": "malonka01",
@@ -88,6 +288,61 @@
       "player_id": "malonmo01",
       "display_name": "Moses Malone",
       "season_count": 19
+    },
+    {
+      "player_id": "maravpe01",
+      "display_name": "Pete Maravich",
+      "season_count": 7
+    },
+    {
+      "player_id": "mariosh01",
+      "display_name": "Shawn Marion",
+      "season_count": 16
+    },
+    {
+      "player_id": "mcadobo01",
+      "display_name": "Bob McAdoo",
+      "season_count": 13
+    },
+    {
+      "player_id": "mcgratr01",
+      "display_name": "Tracy McGrady",
+      "season_count": 15
+    },
+    {
+      "player_id": "mchalke01",
+      "display_name": "Kevin McHale",
+      "season_count": 13
+    },
+    {
+      "player_id": "millere01",
+      "display_name": "Reggie Miller",
+      "season_count": 18
+    },
+    {
+      "player_id": "mingya01",
+      "display_name": "Yao Ming",
+      "season_count": 7
+    },
+    {
+      "player_id": "moncrsi01",
+      "display_name": "Sidney Moncrief",
+      "season_count": 11
+    },
+    {
+      "player_id": "mournal01",
+      "display_name": "Alonzo Mourning",
+      "season_count": 15
+    },
+    {
+      "player_id": "mutomdi01",
+      "display_name": "Dikembe Mutombo",
+      "season_count": 17
+    },
+    {
+      "player_id": "nashst01",
+      "display_name": "Steve Nash",
+      "season_count": 18
     },
     {
       "player_id": "nowitdi01",
@@ -105,15 +360,156 @@
       "season_count": 19
     },
     {
+      "player_id": "parisro01",
+      "display_name": "Robert Parish",
+      "season_count": 21
+    },
+    {
+      "player_id": "parketo01",
+      "display_name": "Tony Parker",
+      "season_count": 18
+    },
+    {
       "player_id": "paulch01",
       "display_name": "Chris Paul",
       "season_count": 21
+    },
+    {
+      "player_id": "paytoga01",
+      "display_name": "Gary Payton",
+      "season_count": 17
+    },
+    {
+      "player_id": "piercpa01",
+      "display_name": "Paul Pierce",
+      "season_count": 19
+    },
+    {
+      "player_id": "pippesc01",
+      "display_name": "Scottie Pippen",
+      "season_count": 17
+    },
+    {
+      "player_id": "pricema01",
+      "display_name": "Mark Price",
+      "season_count": 11
+    },
+    {
+      "player_id": "randoza01",
+      "display_name": "Zach Randolph",
+      "season_count": 17
+    },
+    {
+      "player_id": "reedwi01",
+      "display_name": "Willis Reed",
+      "season_count": 1
+    },
+    {
+      "player_id": "richmmi01",
+      "display_name": "Mitch Richmond",
+      "season_count": 14
+    },
+    {
+      "player_id": "roberos01",
+      "display_name": "Oscar Robertson",
+      "season_count": 1
+    },
+    {
+      "player_id": "robinda01",
+      "display_name": "David Robinson",
+      "season_count": 13
+    },
+    {
+      "player_id": "rodmade01",
+      "display_name": "Dennis Rodman",
+      "season_count": 14
+    },
+    {
+      "player_id": "rondora01",
+      "display_name": "Rajon Rondo",
+      "season_count": 16
+    },
+    {
+      "player_id": "stockjo01",
+      "display_name": "John Stockton",
+      "season_count": 19
+    },
+    {
+      "player_id": "stoudam01",
+      "display_name": "Amar'e Stoudemire",
+      "season_count": 13
+    },
+    {
+      "player_id": "tatumja01",
+      "display_name": "Jayson Tatum",
+      "season_count": 9
+    },
+    {
+      "player_id": "thomais01",
+      "display_name": "Isiah Thomas",
+      "season_count": 13
+    },
+    {
+      "player_id": "thurmna01",
+      "display_name": "Nate Thurmond",
+      "season_count": 4
+    },
+    {
+      "player_id": "unselwe01",
+      "display_name": "Wes Unseld",
+      "season_count": 8
+    },
+    {
+      "player_id": "wadedw01",
+      "display_name": "Dwyane Wade",
+      "season_count": 16
+    },
+    {
+      "player_id": "walkeke02",
+      "display_name": "Kemba Walker",
+      "season_count": 11
+    },
+    {
+      "player_id": "wallabe01",
+      "display_name": "Ben Wallace",
+      "season_count": 15
+    },
+    {
+      "player_id": "waltobi01",
+      "display_name": "Bill Walton",
+      "season_count": 9
+    },
+    {
+      "player_id": "webbech01",
+      "display_name": "Chris Webber",
+      "season_count": 14
+    },
+    {
+      "player_id": "westbru01",
+      "display_name": "Russell Westbrook",
+      "season_count": 18
+    },
+    {
+      "player_id": "westje01",
+      "display_name": "Jerry West",
+      "season_count": 1
+    },
+    {
+      "player_id": "wilkido01",
+      "display_name": "Dominique Wilkins",
+      "season_count": 15
+    },
+    {
+      "player_id": "worthja01",
+      "display_name": "James Worthy",
+      "season_count": 12
     }
   ],
   "artifacts": {
     "season_vectors": "processed/season_vectors.parquet",
     "career_vectors": "processed/career_vectors.parquet",
     "season_labels": "processed/season_labels.parquet",
+    "playoff_context": "processed/playoff_context.parquet",
     "league_career_covariance": "processed/league_career_covariance.npy"
   },
   "feature_columns": [
@@ -157,7 +553,7 @@
     "pipeline.yaml": "sha256:13b1ac6653414366a01eb7e2d017ebbb856be9b18ded62dfb4875aaae17eebaa",
     "features.yaml": "sha256:1d67b64c46561a45a8bfcb5c0ac62b659760679bfce63720e7af1265187321b7",
     "labels.yaml": "sha256:846cd7870ba1f65bc8241d12e56481ca83be5330a126ae92874b592b153f19e5",
-    "allowlist.yaml": "sha256:ebb26e5600049877cc962858300568bdc2c508c72de4e613f2950f5c85d37f7c"
+    "allowlist.yaml": "sha256:9b2039e9c8fc5b900e88352c7eb98a3b5af63f901517d259b29c68d4104a7d7d"
   },
   "raw_csv_checksums": {
     "Advanced.csv": "sha256:e1616ffe7759c22b014cbbb7c7ce10a591615e7ef1e08cc0dba4d2a02872948d",
@@ -181,15 +577,24 @@
     "Team Stats Per 100 Poss.csv": "sha256:e7bf50b9dbdf6a9e57fa6f106b565f82f4890028862bd2442ba437848379afa4",
     "Team Stats Per Game.csv": "sha256:5fbbd4357bb9fadec580346fad9b44f08bc74f46fbafa4a4cec483db6a50a4b6",
     "Team Summaries.csv": "sha256:0a52b3d5f68ca4e3cbdf9041a8b06f4c8ae55935d62b07e9728d0fcf2d6315c9",
-    "Team Totals.csv": "sha256:0e408f0ae6d0feee45b40b74032610ca8aff76b69d5253ed0bb45e39e945f0bf"
+    "Team Totals.csv": "sha256:0e408f0ae6d0feee45b40b74032610ca8aff76b69d5253ed0bb45e39e945f0bf",
+    "finals_results.csv": "sha256:52f9a7cc022f32200270e57cb6b3c8236592abd272de77267a5a8e2ca21d0afd"
   },
-  "feature_correlation_max": 0.9194341828162198,
-  "covariance_condition_number": 98.11786725036869,
+  "feature_correlation_max": 0.9194341828162216,
+  "covariance_condition_number": 98.12483137898931,
   "covariance_player_count": 3265,
   "label_stats": {
-    "mvp_rows": 251,
-    "all_nba_first_rows": 146,
-    "all_nba_any_rows": 236,
-    "seasons_labeled": 360
+    "mvp_rows": 576,
+    "all_nba_first_rows": 239,
+    "all_nba_any_rows": 537,
+    "seasons_labeled": 1398
+  },
+  "vector_space": {
+    "ambient_space": "R^d_standard",
+    "field": "R",
+    "feature_dimension": 11,
+    "embeddings_are_subspace": false,
+    "embedding_map": "Phi: player career data -> bar{z}_i in R^d (nonlinear pipeline)",
+    "x3p_ar_career_coordinate": "mean of finite season x3p_ar_z values (skip-NA)"
   }
 }
