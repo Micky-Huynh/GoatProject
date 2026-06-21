@@ -31,6 +31,8 @@ def _write_minimum_files(goat_root: Path, include_sensitivity: bool = True) -> N
                 "captions:",
                 "  exploratory_disclaimer: 'Layout view only.'",
                 "  era_adjustment: 'Era-adjusted z-scores.'",
+                "embed_3d:",
+                "  enabled: true",
             ]
         ),
         encoding="utf-8",
@@ -41,20 +43,44 @@ def _write_minimum_files(goat_root: Path, include_sensitivity: bool = True) -> N
             {
                 "player_id": "jordami01",
                 "display_name": "Michael Jordan",
-                "public_headline_score": 1.0,
+                "score_pca_whitened_l2": 1.0,
+                "score_goat_index": 1.0,
+                "rank_pca_whitened_l2": 1,
+                "championships": 6,
+                "playoff_seasons": 15,
+                "playoff_performance": 2.4,
+                "stat_outlier_z": 1.2,
+                "team_strength_index": 0.5,
+                "clutch_penalty": 0.0,
+                "score_l2": 1.0,
+                "score_mahalanobis": 1.2,
+                "rank_l2": 1,
+                "rank_mahalanobis": 2,
             },
             {
                 "player_id": "jamesle01",
                 "display_name": "LeBron James",
-                "public_headline_score": 2.0,
+                "score_pca_whitened_l2": 2.0,
+                "score_goat_index": 2.5,
+                "rank_pca_whitened_l2": 2,
+                "championships": 0,
+                "playoff_seasons": 0,
+                "playoff_performance": 0.0,
+                "stat_outlier_z": -0.5,
+                "team_strength_index": 0.0,
+                "clutch_penalty": 0.3,
+                "score_l2": 2.0,
+                "score_mahalanobis": 1.8,
+                "rank_l2": 2,
+                "rank_mahalanobis": 1,
             },
         ]
     ).to_csv(goat_root / "GoatProject-modeling" / "output" / "goat_rankings.csv", index=False)
 
     pd.DataFrame(
         [
-            {"player_id": "jordami01", "display_name": "Michael Jordan", "PC1": 0.5, "PC2": -0.2},
-            {"player_id": "jamesle01", "display_name": "LeBron James", "PC1": -0.3, "PC2": 0.4},
+            {"player_id": "jordami01", "display_name": "Michael Jordan", "PC1": 0.5, "PC2": -0.2, "PC3": 0.1},
+            {"player_id": "jamesle01", "display_name": "LeBron James", "PC1": -0.3, "PC2": 0.4, "PC3": -0.2},
         ]
     ).to_csv(goat_root / "GoatProject-modeling" / "output" / "pca_coordinates.csv", index=False)
 
@@ -66,7 +92,16 @@ def _write_minimum_files(goat_root: Path, include_sensitivity: bool = True) -> N
     ).to_csv(goat_root / "GoatProject-modeling" / "output" / "similarity_matrix.csv", index=False)
 
     (goat_root / "GoatProject-modeling" / "output" / "pca_explained_variance.json").write_text(
-        json.dumps({"cumulative_2d": 0.61}),
+        json.dumps(
+            {
+                "cumulative_2d": 0.61,
+                "components": [
+                    {"component": "PC1", "explained_variance_ratio": 0.45},
+                    {"component": "PC2", "explained_variance_ratio": 0.16},
+                    {"component": "PC3", "explained_variance_ratio": 0.12},
+                ],
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -83,6 +118,53 @@ def test_requires_sensitivity_report(tmp_path: Path) -> None:
         load_artifacts(str(tmp_path))
 
 
+def test_player_profiles_use_career_vectors(tmp_path: Path) -> None:
+    _write_minimum_files(tmp_path, include_sensitivity=True)
+    processed = tmp_path / "processed"
+    processed.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        [
+            {
+                "player_id": "jordami01",
+                "display_name": "Michael Jordan",
+                "bpm_z": 2.0,
+                "vorp_z": 2.1,
+                "per_z": 1.8,
+                "ws_z": 1.9,
+                "ts_percent_z": 1.0,
+                "usg_percent_z": 1.2,
+                "ast_percent_z": 0.5,
+                "stl_percent_z": 1.4,
+                "blk_percent_z": 0.8,
+                "tov_percent_z": 0.6,
+                "x3p_ar_z": 0.2,
+            },
+            {
+                "player_id": "jamesle01",
+                "display_name": "LeBron James",
+                "bpm_z": 1.5,
+                "vorp_z": 1.6,
+                "per_z": 1.4,
+                "ws_z": 1.3,
+                "ts_percent_z": 0.8,
+                "usg_percent_z": 1.0,
+                "ast_percent_z": 1.2,
+                "stl_percent_z": 0.9,
+                "blk_percent_z": 0.7,
+                "tov_percent_z": 0.4,
+                "x3p_ar_z": 0.1,
+            },
+        ]
+    ).to_parquet(processed / "career_vectors.parquet", index=False)
+
+    from goat_viz.profiles import compute_player_profiles
+
+    _, artifacts = load_artifacts(str(tmp_path))
+    profiles = compute_player_profiles(artifacts.career_vectors, artifacts.rankings, artifacts.config)
+    assert profiles["jordami01"]["is_impact_crown"] is True
+    assert any(row["key"] == "defense" for row in profiles["jordami01"]["aspects"])
+
+
 def test_render_outputs(tmp_path: Path) -> None:
     _write_minimum_files(tmp_path, include_sensitivity=True)
     paths, artifacts = load_artifacts(str(tmp_path))
@@ -92,3 +174,13 @@ def test_render_outputs(tmp_path: Path) -> None:
     assert outputs["goat_rankings"].exists()
     assert outputs["pca_scatter"].exists()
     assert outputs["similarity_heatmap"].exists()
+    assert outputs["embed_3d"].exists()
+    html = outputs["embed_3d"].read_text(encoding="utf-8")
+    assert "three.module.js" in html
+    assert "data:image/jpeg;base64," in html
+    assert "profile-panel" in html
+    assert "is_impact_crown" in html
+    assert "cohortImpactLeader" in html
+    assert "alchemy-toggle" in html
+    assert "combinePlayers" in html
+    assert "embed_3d.html" in outputs["index_html"].read_text(encoding="utf-8")

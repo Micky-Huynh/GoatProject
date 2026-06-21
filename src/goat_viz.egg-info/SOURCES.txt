@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 src/goat_viz/__init__.py
+src/goat_viz/embed_3d.py
 src/goat_viz/io.py
 src/goat_viz/render.py
 src/goat_viz/run_viz.py

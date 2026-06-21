@@ -5,29 +5,117 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GOAT Viz Output</title>
   <style>
+    :root {
+      color-scheme: dark;
+    }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #0d1117;
       color: #e6edf3;
-      padding: 24px;
+      line-height: 1.5;
+    }
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+    h1, h2 {
+      text-align: center;
+      font-weight: 600;
+    }
+    h1 {
+      margin-bottom: 8px;
+    }
+    .meta {
+      text-align: center;
+      margin: 0 auto 24px;
+      max-width: 760px;
+    }
+    .meta p {
+      margin: 8px 0;
     }
     a { color: #58a6ff; }
-    img { max-width: min(100%, 960px); border: 1px solid #30363d; margin: 12px 0; }
+    ul {
+      max-width: 520px;
+      margin: 0 auto 32px;
+      padding-left: 1.2rem;
+    }
+    .gallery {
+      display: grid;
+      gap: 40px;
+      margin-top: 24px;
+    }
+    .preview {
+      margin: 0;
+      text-align: center;
+    }
+    .preview img {
+      display: block;
+      width: min(100%, 980px);
+      height: auto;
+      margin: 12px auto 0;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
+    figcaption {
+      color: #8b949e;
+      font-size: 0.95rem;
+    }
     .muted { color: #8b949e; }
+    .center-copy { text-align: center; max-width: 760px; margin: 0 auto 16px; }
+    .embed-shell {
+      width: min(100%, 980px);
+      height: min(72vh, 720px);
+      margin: 0 auto 12px;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0d1117;
+    }
+    .embed-shell iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    details {
+      max-width: 760px;
+      margin: 32px auto 0;
+    }
+    pre {
+      overflow-x: auto;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px;
+    }
   </style>
 </head>
 <body>
-  <h1>GOAT Visualization (Step 5)</h1>
-  <p><strong>Publish gate:</strong> FAIL</p>
-  <p class="muted">Layout view only; index rank = public_headline_score from goat_rankings.csv (L2 if publish gate pass, else Mahalanobis or dual table).</p>
-  <p class="muted">Era-adjusted z-scores; full-league baselines by season and position.</p>
-  <h2>Generated Files</h2>
-  <ul><li><a href="posts/goat_rankings.png">goat_rankings.png</a></li>
+  <main class="page">
+    <h1>GOAT Visualization</h1>
+    <div class="meta">
+      <p><strong>Publish gate:</strong> FAIL</p>
+      <p class="muted">Exploratory layout only. Gold crown = #1 overall impact among currently visible players (mean BPM/VORP/PER/WS z). Bar chart uses score_goat_index (PCA + team-weighted titles + clutch/consensus adjustment).</p>
+      <p class="muted">Era-adjusted z-scores; full-league baselines by season and position.</p>
+    </div>
+    <h2>Generated Files</h2>
+    <ul><li><a href="posts/goat_rankings.png">goat_rankings.png</a></li>
 <li><a href="posts/pca_scatter.png">pca_scatter.png</a></li>
 <li><a href="posts/similarity_heatmap.png">similarity_heatmap.png</a></li></ul>
-  <h2>Previews</h2>
-  <div><h3>goat_rankings.png</h3><img src="posts/goat_rankings.png" alt="goat_rankings.png"></div><div><h3>pca_scatter.png</h3><img src="posts/pca_scatter.png" alt="pca_scatter.png"></div><div><h3>similarity_heatmap.png</h3><img src="posts/similarity_heatmap.png" alt="similarity_heatmap.png"></div>
-  <details><summary>Validation report (optional)</summary><pre>{&#x27;validator&#x27;: &#x27;xgboost_award_alignment_v1&#x27;, &#x27;non_gating&#x27;: True, &#x27;split&#x27;: {&#x27;train_seasons_end&#x27;: 2014, &#x27;test_seasons_start&#x27;: 2015}, &#x27;primary_metrics&#x27;: {&#x27;test_sample_count&#x27;: 103, &#x27;mvp_vote_share&#x27;: {&#x27;metric&#x27;: &#x27;spearman&#x27;, &#x27;value&#x27;: 0.7055094253683192}, &#x27;all_nba_first&#x27;: {&#x27;metric&#x27;: &#x27;roc_auc&#x27;, &#x27;value&#x27;: 0.8639269406392693}}, &#x27;secondary_metrics&#x27;: {&#x27;career_public_headline_vs_mean_test_prediction_spearman&#x27;: 0.6643356643356644, &#x27;player_count&#x27;: 12}, &#x27;inputs&#x27;: {&#x27;season_vectors&#x27;: &#x27;GoatProject-data/processed/season_vectors.parquet&#x27;, &#x27;season_labels&#x27;: &#x27;GoatProject-data/processed/season_labels.parquet&#x27;, &#x27;goat_rankings&#x27;: &#x27;GoatProject-modeling/output/goat_rankings.csv&#x27;}}</pre></details>
+    
+    <h2>3D Stat-Space Explorer</h2>
+    <div class="embed-shell">
+      <iframe src="embed_3d.html" title="3D PCA embedding" loading="lazy"></iframe>
+    </div>
+    <p class="center-copy"><a href="embed_3d.html">Open full-screen 3D explorer</a></p>
+
+    <h2>Previews</h2>
+    <div class="gallery">
+      <figure class="preview"><figcaption>goat_rankings.png</figcaption><img src="posts/goat_rankings.png" alt="goat_rankings.png"></figure><figure class="preview"><figcaption>pca_scatter.png</figcaption><img src="posts/pca_scatter.png" alt="pca_scatter.png"></figure><figure class="preview"><figcaption>similarity_heatmap.png</figcaption><img src="posts/similarity_heatmap.png" alt="similarity_heatmap.png"></figure>
+    </div>
+    <details><summary>Validation report (optional)</summary><pre>{&#x27;validator&#x27;: &#x27;xgboost_award_alignment_v1&#x27;, &#x27;non_gating&#x27;: True, &#x27;split&#x27;: {&#x27;train_seasons_end&#x27;: 2014, &#x27;test_seasons_start&#x27;: 2015}, &#x27;primary_metrics&#x27;: {&#x27;test_sample_count&#x27;: 299, &#x27;mvp_vote_share&#x27;: {&#x27;metric&#x27;: &#x27;spearman&#x27;, &#x27;value&#x27;: 0.6717742139198041}, &#x27;all_nba_first&#x27;: {&#x27;metric&#x27;: &#x27;roc_auc&#x27;, &#x27;value&#x27;: 0.9244783556524447}}, &#x27;secondary_metrics&#x27;: {&#x27;career_goat_index_vs_mean_test_prediction_spearman&#x27;: 0.7046558704453442, &#x27;player_count&#x27;: 39}, &#x27;inputs&#x27;: {&#x27;season_vectors&#x27;: &#x27;GoatProject-data/processed/season_vectors.parquet&#x27;, &#x27;season_labels&#x27;: &#x27;GoatProject-data/processed/season_labels.parquet&#x27;, &#x27;goat_rankings&#x27;: &#x27;GoatProject-modeling/output/goat_rankings.csv&#x27;}}</pre></details>
+  </main>
 </body>
 </html>

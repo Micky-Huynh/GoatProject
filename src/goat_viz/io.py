@@ -28,6 +28,7 @@ class VizArtifacts:
     similarity_matrix: pd.DataFrame
     sensitivity_report: dict[str, Any]
     validation_report: dict[str, Any] | None
+    career_vectors: pd.DataFrame | None = None
 
 
 def resolve_goat_root(cli_goat_root: str | None = None) -> Path:
@@ -95,6 +96,13 @@ def load_artifacts(cli_goat_root: str | None = None) -> tuple[VizPaths, VizArtif
     validation_path = paths.modeling_output / "validation_report.json"
     validation_report = _read_json(validation_path) if validation_path.exists() else None
 
+    career_vectors_path = paths.goat_root / "GoatProject-data" / "processed" / "career_vectors.parquet"
+    if not career_vectors_path.exists():
+        career_vectors_path = paths.goat_root / "processed" / "career_vectors.parquet"
+    career_vectors = (
+        pd.read_parquet(career_vectors_path) if career_vectors_path.exists() else None
+    )
+
     artifacts = VizArtifacts(
         config=config,
         rankings=rankings,
@@ -103,5 +111,6 @@ def load_artifacts(cli_goat_root: str | None = None) -> tuple[VizPaths, VizArtif
         similarity_matrix=similarity_matrix,
         sensitivity_report=sensitivity_report,
         validation_report=validation_report,
+        career_vectors=career_vectors,
     )
     return paths, artifacts
