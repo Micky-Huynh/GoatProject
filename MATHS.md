@@ -272,7 +272,20 @@ See `README.md` → **Visualization guide** for how to read the 2D and 3D plots.
 
 ---
 
-## 12. Important limitations (mathematical, not bugs)
+
+## 13. Alchemy Mode (vector blend + discovery)
+
+Separate from GOAT rank. Two layers:
+
+1. **Ambient space** $V = \mathbb{R}^{11}$ — satisfies all 8 vector-space axioms.
+2. **Combine** $C(u,v) = 0.5\,u + 0.5\,v$ on career z-vectors — linear in $V$, not player addition.
+3. **Discovery** $D(w) = \arg\min_i \| \bar{z}_i - w \|_2$ over the allowlist.
+
+Cached pair results: `GoatProject-modeling/output/alchemy_cache.json` (server) and browser localStorage (3D embed).
+
+**Not GOAT rank.** Interactive flow: toggle Alchemy mode, click two orbs, see nearest-neighbor discovery.
+
+## 14. Important limitations (mathematical, not bugs)
 
 1. **Correlated impact stats** — BPM, VORP, PER, WS overlap; PCA and Mahalanobis partially address this, impact_z does not deduplicate.
 2. **Career mean ≠ peak** — one elite season is averaged with many good ones.

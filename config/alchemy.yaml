@@ -1,0 +1,10 @@
+version: "1.0.0"
+blend:
+  alpha: 0.5
+  beta: 0.5
+discovery:
+  metric: l2
+cache:
+  artifact: alchemy_cache.json
+framing:
+  disclaimer: Alchemy merge is a 50/50 stat-vector blend in R^11 mapped to the nearest allowlist player. Exploratory — not GOAT rank.

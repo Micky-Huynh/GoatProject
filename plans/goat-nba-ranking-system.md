@@ -1,22 +1,22 @@
-# Blueprint: NBA GOAT Ranking System (v1)
+# Blueprint: NBA GOAT Ranking System (v2)
 
-**Objective:** Finish the curated 21-player GOAT ranking system — data pipeline → L2 ranking → unsupervised analysis → XGBoost/SHAP validation → viz.
+**Objective:** Curated GOAT stat-space index — data pipeline → geometry scores → playoff composite → analysis → validation → viz.
 
-**Status:** Approved — Step 1 ready  
+**Status:** **Steps 1–5 complete** (2026-06-15); docs reconciled 2026-06-21  
 **Plan path:** `plans/goat-nba-ranking-system.md`  
-**Architecture:** `ARCHITECTURE.md` (approved 2026-06-14)  
-**Allowlist:** `config/allowlist.yaml`  
-**Pipeline:** `config/pipeline.yaml`  
+**Architecture:** `ARCHITECTURE.md` v2.0.0  
+**Allowlist:** `config/allowlist.yaml` (**100 players**; default viz: 21)  
+**Pipeline:** `config/pipeline.yaml` · `config/playoffs.yaml`  
 **Memory:** `MEMORY/MEMORY.md`  
-**Mode:** Direct (local git + worktrees; no git remote)  
+**One-shot run:** `./run.sh`  
 **Created:** 2026-06-14  
-**Player pool:** 21 (locked for v1)
+**Player pool:** 100 (v2); 21-player default in 3D picker
 
 ---
 
 ## Implementation gate
 
-**Passed 2026-06-14.** Proceed with Step 1 on `GoatProject-data` / `data` branch.
+**Passed 2026-06-14.** Steps 1–5 shipped 2026-06-15. Publish gate **failed** at 100-player scale — see `output/sensitivity_report.json`.
 
 ---
 
@@ -137,11 +137,11 @@ python3 -c "import json; m=json.load(open('processed/manifest.json')); assert m[
 
 ### Exit criteria
 
-- [ ] `career_vectors.parquet` has 21 rows
-- [ ] `season_labels.parquet` present with MVP + All-NBA columns
-- [ ] `league_career_covariance.npy` present
-- [ ] Manifest records hashes, fallback usage, missing-data drops
-- [ ] pytest green (include: no allowlist-before-zscore, Kareem/Moses 3pt, BPM-missing seasons, σ=0 fallback)
+- [x] `career_vectors.parquet` has allowlist row count (100)
+- [x] `season_labels.parquet` present with MVP + All-NBA columns
+- [x] `league_career_covariance.npy` present
+- [x] Manifest records hashes, fallback usage, missing-data drops
+- [x] pytest green
 
 ---
 
@@ -159,9 +159,9 @@ Set `public_headline_score` per publish gate (§8.2) → `output/goat_rankings.c
 
 ### Exit criteria
 
-- [ ] 21 players ranked; all three score columns populated
-- [ ] `sensitivity_report.json` exists with `publish_gate_pass`
-- [ ] Deterministic rerun
+- [x] 100 players ranked; geometry + composite columns populated
+- [x] `sensitivity_report.json` exists (`publish_gate_pass: false` — document before social post)
+- [x] Deterministic rerun
 
 ---
 
@@ -172,7 +172,7 @@ Set `public_headline_score` per publish gate (§8.2) → `output/goat_rankings.c
 
 ### Exit criteria
 
-- [ ] `similarity_matrix.csv`, `pca_coordinates.csv`, `pca_explained_variance.json`, `pca_loadings.csv`, `uniqueness.csv` in `output/`
+- [x] `similarity_matrix.csv`, `pca_coordinates.csv`, `pca_explained_variance.json`, `pca_loadings.csv`, `uniqueness.csv` in `output/`
 
 ---
 
@@ -183,8 +183,8 @@ Set `public_headline_score` per publish gate (§8.2) → `output/goat_rankings.c
 
 ### Exit criteria
 
-- [ ] `validation_report.json` with test-season (≥2015) **primary** metrics: Spearman on `mvp_vote_share`, ROC-AUC (or accuracy) on `all_nba_first`
-- [ ] Optional secondary career-level Spearman documented; primary rank and publish gate unchanged
+- [x] `validation_report.json` with test-season (≥2015) primary metrics
+- [x] Primary rank and publish gate unchanged by validator
 
 ---
 
@@ -195,8 +195,8 @@ Set `public_headline_score` per publish gate (§8.2) → `output/goat_rankings.c
 
 ### Exit criteria
 
-- [ ] `output/index.html` + `posts/` PNGs; headline chart uses `public_headline_score`
-- [ ] No post assets without `sensitivity_report.json`
+- [x] `output/index.html` + `embed_3d.html` + `posts/` PNGs; bar chart uses `score_goat_index`
+- [x] `sensitivity_report.json` present (viz gate)
 
 ---
 
@@ -219,3 +219,5 @@ Set `public_headline_score` per publish gate (§8.2) → `output/goat_rankings.c
 |------|--------|
 | 2026-06-14 | Initial blueprint; 21 players locked; full-league z-score fix |
 | 2026-06-14 | MLE review amendments — pipeline missing-data/fallback, labels.yaml, scoring S5/PCA, validator §8.3, Step 1 labels+covariance |
+| 2026-06-15 | Steps 1–5 shipped; pool expanded to 100; playoffs + `score_goat_index` + 3D viz |
+| 2026-06-21 | Docs reconciled to v2 (`ARCHITECTURE.md`, `MEMORY/MEMORY.md`, this plan) |

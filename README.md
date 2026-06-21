@@ -97,7 +97,15 @@ cd ../GoatProject-modeling && pip install -e ".[dev]"
 cd ../GoatProject-viz && pip install -e ".[dev]"
 ```
 
-### Build everything
+### Build everything (one command)
+
+From the repo root:
+
+```bash
+./run.sh
+```
+
+### Build everything (step by step)
 
 ```bash
 export GOAT_ROOT="/path/to/GoatProject"
