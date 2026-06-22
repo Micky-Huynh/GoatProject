@@ -297,7 +297,6 @@ After config changes, re-run the pipeline steps above.
 
 - **Mathematics & formulas:** `MATHS.md`
 - **System design:** `ARCHITECTURE.md`
-- **Operator memory / session notes:** `MEMORY/MEMORY.md` (local, gitignored on main)
 
 ---
 
