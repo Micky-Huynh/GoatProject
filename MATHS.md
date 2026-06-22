@@ -6,7 +6,7 @@ This document explains **how numbers are produced** in GoatProject: from raw sea
 
 ## 1. Pipeline overview
 
-Each player is represented by a **career vector** \(\mathbf{x} \in \mathbb{R}^{d}\) with \(d = 11\) era-adjusted z-scored features.
+Each player is represented by a **career vector** $\mathbf{x} \in \mathbb{R}^{d}$ with $d = 11$ era-adjusted z-scored features.
 
 ```text
 Season rows (full league)
@@ -21,13 +21,11 @@ The **allowlist** (100 curated players) is filtered *after* league-wide era adju
 
 ## 2. Feature vector
 
-Raw features come from `config/features.yaml` (mostly `Advanced.csv`). Each feature \(f\) has an **orientation** \(\omega_f \in \{+1, -1\}\):
+Raw features come from `config/features.yaml` (mostly `Advanced.csv`). Each feature $f$ has an **orientation** $\omega_f \in \{+1, -1\}$:
 
-\[
-x_f^{\text{raw}} = \omega_f \cdot \text{stat}_f
-\]
+$$x_f^{\text{raw}} = \omega_f \cdot \text{stat}_f$$
 
-Turnover rate uses \(\omega = -1\) (lower turnovers are better). Features marked `exclude_when_pre_three_point_line` are set to missing for designated pre-1979 players before z-scoring.
+Turnover rate uses $\omega = -1$ (lower turnovers are better). Features marked `exclude_when_pre_three_point_line` are set to missing for designated pre-1979 players before z-scoring.
 
 **The 11 dimensions:**
 
@@ -49,52 +47,42 @@ Turnover rate uses \(\omega = -1\) (lower turnovers are better). Features marked
 
 ## 3. Era adjustment (z-scores)
 
-For each season row, each feature is converted to a within-group z-score. Primary grouping is **(season, position)** with fallback to **season-only** when group size \(< 30\) (`config/pipeline.yaml`).
+For each season row, each feature is converted to a within-group z-score. Primary grouping is **(season, position)** with fallback to **season-only** when group size $< 30$ (`config/pipeline.yaml`).
 
-For feature \(f\) in group \(g\):
+For feature $f$ in group $g$:
 
-\[
-z_{f} = \frac{x_f^{\text{raw}} - \mu_{f,g}}{\sigma_{f,g}}
-\]
+$$z_{f} = \frac{x_f^{\text{raw}} - \mu_{f,g}}{\sigma_{f,g}}$$
 
-where \(\mu_{f,g}, \sigma_{f,g}\) are the mean and (population) standard deviation over all qualified season rows in that group.
+where $\mu_{f,g}, \sigma_{f,g}$ are the mean and (population) standard deviation over all qualified season rows in that group.
 
 **Career aggregation** (`aggregate_career_vectors`):
 
-\[
-\bar{z}_{f}^{(\text{player})} = \frac{1}{N} \sum_{\text{seasons } s} z_{f,s}
-\]
+$$\bar{z}_{f}^{(\text{player})} = \frac{1}{N} \sum_{\text{seasons } s} z_{f,s}$$
 
-- \(N\) = count of seasons with \(\geq 200\) minutes (not minute-weighted).
+- $N$ = count of seasons with $\geq 200$ minutes (not minute-weighted).
 - Missing feature dimensions after aggregation are imputed as **0** (neutral = league mean in z-space).
 
 The career vector is:
 
-\[
-\mathbf{x} = (\bar{z}_1, \bar{z}_2, \ldots, \bar{z}_{11})^\top
-\]
+$$\mathbf{x} = (\bar{z}_1, \bar{z}_2, \ldots, \bar{z}_{11})^\top$$
 
 ---
 
 ## 4. Distance scores (geometry in stat space)
 
-All three scores use the same \(\mathbf{x}\) but measure “how extreme” the profile is in different geometries. **Lower rank** = smaller distance (closer to the origin in that metric). These are **not** impact rankings.
+All three scores use the same $\mathbf{x}$ but measure "how extreme" the profile is in different geometries. **Lower rank** = smaller distance (closer to the origin in that metric). These are **not** GOAT ranks by themselves; see §9.
 
 ### 4.1 Euclidean (L2) norm
 
-\[
-\text{score\_l2} = \|\mathbf{x}\|_2 = \sqrt{\sum_{j=1}^{d} x_j^2}
-\]
+$$\text{score\_l2} = \|\mathbf{x}\|_2 = \sqrt{\sum_{j=1}^{d} x_j^2}$$
 
 Treats every dimension as equally important and uncorrelated.
 
 ### 4.2 Mahalanobis distance
 
-Let \(\Sigma\) be the **league career covariance** matrix over the same \(d\) features (regularized by \(\varepsilon I\)):
+Let $\Sigma$ be the **league career covariance** matrix over the same $d$ features (regularized by $\varepsilon I$):
 
-\[
-\text{score\_mahalanobis} = \sqrt{\mathbf{x}^\top \Sigma^{-1} \mathbf{x}}
-\]
+$$\text{score\_mahalanobis} = \sqrt{\mathbf{x}^\top \Sigma^{-1} \mathbf{x}}$$
 
 Down-weights directions where many players vary together (e.g. correlated impact stats).
 
@@ -102,18 +90,16 @@ Down-weights directions where many players vary together (e.g. correlated impact
 
 PCA is fit on **full-league** career vectors (not just the allowlist).
 
-1. Center: \(\mathbf{X}_c = \mathbf{X} - \boldsymbol{\mu}\)
-2. SVD: \(\mathbf{X}_c = \mathbf{U} \mathbf{S} \mathbf{V}^\top\)
-3. Keep the smallest \(k\) components such that cumulative explained variance \(\geq 0.90\) (currently \(k = 6\)).
-4. Project: \(\mathbf{p}_i = \mathbf{x}_i^\top \mathbf{V}_{1:k}^\top\)
-5. Whiten: \(\tilde{p}_{ij} = p_{ij} / \sqrt{\lambda_j}\) where \(\lambda_j\) is explained variance along PC\(j\).
+1. Center: $\mathbf{X}_c = \mathbf{X} - \boldsymbol{\mu}$
+2. SVD: $\mathbf{X}_c = \mathbf{U} \mathbf{S} \mathbf{V}^\top$
+3. Keep the smallest $k$ components such that cumulative explained variance $\geq 0.90$ (currently $k = 6$).
+4. Project: $\mathbf{p}_i = \mathbf{x}_i^\top \mathbf{V}_{1:k}^\top$
+5. Whiten: $\tilde{p}_{ij} = p_{ij} / \sqrt{\lambda_j}$ where $\lambda_j$ is explained variance along PC$j$.
 6. Score:
 
-\[
-\text{score\_pca\_whitened\_l2} = \|\tilde{\mathbf{p}}\|_2
-\]
+$$\text{score\_pca\_whitened\_l2} = \|\tilde{\mathbf{p}}\|_2$$
 
-**Interpretation:** distance from the multivariate center in a rotated, variance-normalized space. High = unusual multi-stat profile; low = compact / near-average across PCs. **Not** the same as “best player.”
+**Interpretation:** distance from the multivariate center in a rotated, variance-normalized space. High = unusual multi-stat profile; low = compact / near-average across PCs. **Not** the same as "being impactful" (see §6).
 
 ---
 
@@ -121,17 +107,15 @@ PCA is fit on **full-league** career vectors (not just the allowlist).
 
 ### Fitting
 
-- **Training set:** all full-league career vectors (same \(d\) features).
+- **Training set:** all full-league career vectors (same $d$ features).
 - **Method:** PCA via SVD on centered data (same routine as §4.3).
 - **Outputs:** `pca_coordinates.csv`, `pca_loadings.csv`, `pca_explained_variance.json`.
 
 ### Projection (allowlist players)
 
-\[
-\text{PC}_m^{(\text{player})} = (\mathbf{x} - \boldsymbol{\mu})^\top \mathbf{v}_m
-\]
+$$\text{PC}_m^{(\text{player})} = (\mathbf{x} - \boldsymbol{\mu})^\top \mathbf{v}_m$$
 
-where \(\mathbf{v}_m\) is the \(m\)-th principal axis (row of \(\mathbf{V}\)).
+where $\mathbf{v}_m$ is the $m$-th principal axis (row of $\mathbf{V}$).
 
 ### Current variance split (approximate)
 
@@ -142,7 +126,7 @@ where \(\mathbf{v}_m\) is the \(m\)-th principal axis (row of \(\mathbf{V}\)).
 | **PC3** | ~12% | Playmaking vs rim protection |
 | **PC1 + PC2** | ~54% | Plane used by the **2D scatter** |
 
-PC2 and PC3 are **style** axes, not universal “better/worse.”
+PC2 and PC3 are **style** axes, not universal "better/worse."
 
 ---
 
@@ -150,9 +134,7 @@ PC2 and PC3 are **style** axes, not universal “better/worse.”
 
 Separate from PCA distance. Defined in `config/viz.yaml` → `skill_aspects.overall`:
 
-\[
-\text{impact\_z} = \frac{1}{4}\bigl(\bar{z}_{\text{bpm}} + \bar{z}_{\text{vorp}} + \bar{z}_{\text{per}} + \bar{z}_{\text{ws}}\bigr)
-\]
+$$\text{impact\_z} = \frac{1}{4}\bigl(\bar{z}_{\text{bpm}} + \bar{z}_{\text{vorp}} + \bar{z}_{\text{per}} + \bar{z}_{\text{ws}}\bigr)$$
 
 **Gold crown (interactive 3D):** player with maximum `impact_z` among **currently visible** checkboxes. Championships do not enter this formula.
 
@@ -166,8 +148,8 @@ Built in `GoatProject-data` from finals results + team-season strength (team-lev
 
 Per player-season on a playoff team:
 
-- **Ring credit** — base + underdog bonus when team strength index \(< 0\)
-- **Finals loss debit** — base + favorite penalty when team strength \(> 0\)
+- **Ring credit** — base + underdog bonus when team strength index $< 0$
+- **Finals loss debit** — base + favorite penalty when team strength $> 0$
 - **Depth score** — ring / finals / playoff-only weights, adjusted for underdog runs
 
 Aggregated per career:
@@ -175,7 +157,7 @@ Aggregated per career:
 | Field | Meaning |
 |-------|---------|
 | `championships` | Count of title seasons |
-| `championship_net` | \(\sum \text{ring credit} - \sum \text{finals loss debit}\) |
+| `championship_net` | $\sum \text{ring credit} - \sum \text{finals loss debit}$ |
 | `playoff_performance` | Mean depth score per playoff season |
 | `max_consecutive_championships` | Longest back-to-back title streak |
 | `repeat_titles_score` | Rings + consecutive bonuses + dynasty bonus (below) |
@@ -184,16 +166,14 @@ Aggregated per career:
 
 From `config/playoffs.yaml` → `repeat_titles`:
 
-\[
-\text{repeat\_titles\_score} = R + \sum_{\text{streaks}} (L - 1) \cdot b + \mathbb{1}[\max\_\text{streak} \geq 3] \cdot B
-\]
+$$\text{repeat\_titles\_score} = R + \sum_{\text{streaks}} (L - 1) \cdot b + \mathbb{1}[\text{max\_streak} \geq 3] \cdot B$$
 
-- \(R\) = ring count  
-- \(L\) = length of each consecutive title streak  
-- \(b = 0.75\) = `consecutive_bonus_per_ring`  
-- \(B = 1.5\) = `dynasty_bonus` when max streak \(\geq 3\)
+- $R$ = ring count  
+- $L$ = length of each consecutive title streak  
+- $b = 0.75$ = `consecutive_bonus_per_ring`  
+- $B = 1.5$ = `dynasty_bonus` when max streak $\geq 3$
 
-Example: six rings in two 3-peats → \(6 + 2(0.75) + 2(0.75) + 1.5 = 10.5\). One ring with no streak → \(1.0\).
+Example: six rings in two 3-peats → $6 + 2(0.75) + 2(0.75) + 1.5 = 10.5$. One ring with no streak → $1.0$.
 
 ---
 
@@ -203,39 +183,27 @@ Penalizes players whose **stat dominance** exceeds **playoff success + peer reco
 
 Stat dominance (z-scored across allowlist):
 
-\[
-\text{stat\_outlier\_z} = z\!\left(\frac{1}{4}(\bar{z}_{\text{bpm}}+\bar{z}_{\text{vorp}}+\bar{z}_{\text{per}}+\bar{z}_{\text{ws}})\right)
-\]
+$$\text{stat\_outlier\_z} = z\!\left(\frac{1}{4}(\bar{z}_{\text{bpm}}+\bar{z}_{\text{vorp}}+\bar{z}_{\text{per}}+\bar{z}_{\text{ws}})\right)$$
 
 Playoff success (per player, then z-scored):
 
-\[
-\text{playoff\_success} = 1.25 \cdot \text{playoff\_performance} + 2.0 \cdot \text{championships} + 0.75 \cdot \text{finals\_appearances} - 0.35 \cdot \text{finals\_losses}
-\]
+$$\text{playoff\_success} = 1.25 \cdot \text{playoff\_performance} + 2.0 \cdot \text{championships} + 0.75 \cdot \text{finals\_appearances} - 0.35 \cdot \text{finals\_losses}$$
 
 Consensus:
 
-\[
-\text{consensus} = 3.0 \cdot \text{mvp\_peak} + 0.8 \cdot \text{all\_nba\_first\_count}
-\]
+$$\text{consensus} = 3.0 \cdot \text{mvp\_peak} + 0.8 \cdot \text{all\_nba\_first\_count}$$
 
 Penalty (only when stats run ahead of results):
 
-\[
-\text{clutch\_gap} = \max\bigl(0,\; \text{stat\_outlier\_z} - z(\text{playoff\_success}) - 0.45 \cdot z(\text{consensus})\bigr)
-\]
+$$\text{clutch\_gap} = \max\bigl(0,\; \text{stat\_outlier\_z} - z(\text{playoff\_success}) - 0.45 \cdot z(\text{consensus})\bigr)$$
 
-\[
-\text{clutch\_penalty} = 0.55 \cdot \text{clutch\_gap}
-\]
+$$\text{clutch\_penalty} = 0.55 \cdot \text{clutch\_gap}$$
 
 ---
 
 ## 9. Composite GOAT index (bar chart)
 
-\[
-\text{score\_goat\_index} = 1.0 \cdot \text{score\_pca\_whitened\_l2} - 0.35 \cdot \text{championship\_net} + 0.45 \cdot \text{clutch\_penalty}
-\]
+$$\text{score\_goat\_index} = 1.0 \cdot \text{score\_pca\_whitened\_l2} - 0.35 \cdot \text{championship\_net} + 0.45 \cdot \text{clutch\_penalty}$$
 
 **Lower is better** on the bar chart. Weights from `config/playoffs.yaml` → `goat_index`.
 
@@ -247,13 +215,9 @@ This mixes geometry (PCA distance), titles (net credit), and the clutch tax — 
 
 For allowlist players, career vectors are L2-normalized:
 
-\[
-\hat{\mathbf{x}}_i = \frac{\mathbf{x}_i}{\|\mathbf{x}_i\|_2}
-\]
+$$\hat{\mathbf{x}}_i = \frac{\mathbf{x}_i}{\|\mathbf{x}_i\|_2}$$
 
-\[
-\text{similarity}(i, j) = \hat{\mathbf{x}}_i^\top \hat{\mathbf{x}}_j \in [-1, 1]
-\]
+$$\text{similarity}(i, j) = \hat{\mathbf{x}}_i^\top \hat{\mathbf{x}}_j \in [-1, 1]$$
 
 Used for the **similarity heatmap** (play-style proximity, not greatness).
 
@@ -263,8 +227,8 @@ Used for the **similarity heatmap** (play-style proximity, not greatness).
 
 | Artifact | Math object | Interactive? |
 |----------|-------------|--------------|
-| **2D PCA scatter** | \((\text{PC1}, \text{PC2})\) | No — static PNG |
-| **3D embed** | \((\text{PC1}, \text{PC2}, \text{PC3})\) mapped to display cube; crown = max impact_z in selection | Yes |
+| **2D PCA scatter** | $({\text{PC1}}, {\text{PC2}})$ | No — static PNG |
+| **3D embed** | $({\text{PC1}}, {\text{PC2}}, {\text{PC3}})$ mapped to display cube; crown = max impact_z in selection | Yes |
 | **Bar chart** | `score_goat_index` | No |
 | **Heatmap** | Cosine similarity matrix | No |
 
@@ -272,6 +236,11 @@ See `README.md` → **Visualization guide** for how to read the 2D and 3D plots.
 
 ---
 
+## 12. Section 12 reserved
+
+(Placeholder for future content.)
+
+---
 
 ## 13. Alchemy Mode (vector blend + discovery)
 
@@ -316,11 +285,9 @@ Career `showman_z` = weighted mean of available component z-scores (MVP uses pea
 
 **Full profile** (all components available):
 
-\[
-\text{showman\_z} = 0.30\,z_{\text{dunk}} + 0.25\,z_{\text{and1}} + 0.25\,z_{\text{ASG}} + 0.15\,z_{\text{MVP}} + 0.05\,z_{\text{heave}}
-\]
+$$\text{showman\_z} = 0.30\,z_{\text{dunk}} + 0.25\,z_{\text{and1}} + 0.25\,z_{\text{ASG}} + 0.15\,z_{\text{MVP}} + 0.05\,z_{\text{heave}}$$
 
-**Legacy partial profile** (`showman_partial = true`): when any qualifying season lacks reliable dunk or and-1 data (typical pre-1979), **reweight — do not impute**. Dunk and and-1 are excluded; remaining weights renormalize to 1.0:
+**Legacy partial profile** (`showman_partial = true`): when any qualifying season lacks reliable dunk or and-1 data (typical pre-1979), **reweight — do not impute**. Dunk and and-1 are excluded; remaining components renormalize to 100%.
 
 | Component | Legacy partial weight |
 |-----------|----------------------|
@@ -338,17 +305,13 @@ Let $\mathbf{u}, \mathbf{v} \in \mathbb{R}^{18}$ be alchemy career vectors for p
 
 1. **Combine** — convex blend in $\mathbb{R}^{18}$:
 
-\[
-C(\mathbf{u}, \mathbf{v}) = \alpha\,\mathbf{u} + \beta\,\mathbf{v}
-\]
+$$C(\mathbf{u}, \mathbf{v}) = \alpha\,\mathbf{u} + \beta\,\mathbf{v}$$
 
 Linear in the ambient space; **not** player addition on the allowlist.
 
 2. **Discovery** — nearest neighbor by L2 in $\mathbb{R}^{18}$:
 
-\[
-D(\mathbf{w}) = \arg\min_{p \in E_{\text{allow}}} \| \mathbf{w} - \mathbf{z}_p \|_2
-\]
+$$D(\mathbf{w}) = \arg\min_{p \in E_{\text{allow}}} \| \mathbf{w} - \mathbf{z}_p \|_2$$
 
 where $\mathbf{z}_p$ uses `alchemy_feature_columns` only.
 
@@ -371,12 +334,14 @@ UI must label both: animation is honest for convex combination in **display** sp
 
 **Not GOAT rank.** Discovery labels the nearest allowlist player to a hypothetical blend — exploratory only.
 
+---
+
 ## 14. Important limitations (mathematical, not bugs)
 
 1. **Correlated impact stats** — BPM, VORP, PER, WS overlap; PCA and Mahalanobis partially address this, impact_z does not deduplicate.
 2. **Career mean ≠ peak** — one elite season is averaged with many good ones.
-3. **Neutral imputation** — missing eras (e.g. pre-3PT line) become \(z = 0\), pulling vectors toward the center.
+3. **Neutral imputation** — missing eras (e.g. pre-3PT line) become $z = 0$, pulling vectors toward the center.
 4. **Curated cohort** — ranks are within 100 selected players, not all NBA history.
 5. **Multiple valid orderings** — impact, titles, geometry, and composite index optimize different objectives.
 
-No single scalar is “the” GOAT; the model exposes **which question each number answers**.
+No single scalar is "the" GOAT; the model exposes **which question each number answers**.
