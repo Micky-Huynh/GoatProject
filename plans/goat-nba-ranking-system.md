@@ -129,7 +129,7 @@ Manifest must include: `config_hashes`, `raw_csv_checksums`, era fallback counts
 ### Verification
 
 ```bash
-cd "GoatProject-data"
+cd GoatProject-data
 python3 -m pytest tests/ -q
 python3 -m goat_data.run_pipeline
 python3 -c "import json; m=json.load(open('processed/manifest.json')); assert m['player_count']==21; assert 'config_hashes' in m"
