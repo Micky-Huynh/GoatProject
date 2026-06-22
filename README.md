@@ -44,7 +44,9 @@ If outputs are already built, open the visualization bundle in a browser:
 GoatProject-viz/output/index.html
 ```
 
-The **3D embed** (`embed_3d.html`) is the main interactive view: rotate the PCA space, pick players, and hover orbs for skill breakdowns.
+Open **`index.html`** for the unified site — one tab with a nav bar to switch Overview, 3D Explorer, Alchemy Lab, and PCA Map without full page reloads.
+
+The **3D embed** (`embed_3d.html`) is also available standalone: rotate the PCA space, pick players, and hover orbs for skill breakdowns.
 
 The **Alchemy Lab** (`alchemy.html`) is a separate page for blending two players and discovering the nearest allowlist match in R¹⁸ stat space:
 

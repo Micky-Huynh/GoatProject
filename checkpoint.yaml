@@ -27,6 +27,7 @@ required_files:
   - GoatProject-modeling/output/goat_rankings.csv
   - GoatProject-modeling/output/alchemy_cache.json
   - GoatProject-modeling/output/pca_coordinates.csv
+  - GoatProject-viz/output/home.html
   - GoatProject-viz/output/index.html
   - GoatProject-viz/output/embed_3d.html
   - GoatProject-viz/output/alchemy.html
