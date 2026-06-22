@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "pipeline_version": "1.0.0",
-  "created_at": "2026-06-15T03:04:51.740426+00:00",
+  "created_at": "2026-06-22T00:16:25.318652+00:00",
   "player_count": 100,
   "players": [
     {
@@ -525,6 +525,35 @@
     "tov_percent_z",
     "x3p_ar_z"
   ],
+  "alchemy_feature_columns": [
+    "bpm_z",
+    "vorp_z",
+    "per_z",
+    "ws_z",
+    "ts_percent_z",
+    "usg_percent_z",
+    "ast_percent_z",
+    "stl_percent_z",
+    "blk_percent_z",
+    "tov_percent_z",
+    "x3p_ar_z",
+    "showman_z",
+    "zone_0_3_z",
+    "zone_3_10_z",
+    "zone_10_16_z",
+    "zone_16_3p_z",
+    "zone_3p_z",
+    "zone_corner3_z"
+  ],
+  "alchemy_metadata_columns": [
+    "showman_partial",
+    "zone_0_3_share",
+    "zone_3_10_share",
+    "zone_10_16_share",
+    "zone_16_3p_share",
+    "zone_3p_share",
+    "zone_corner3_share"
+  ],
   "metadata_columns": [
     "player_id",
     "season",
@@ -593,6 +622,7 @@
     "ambient_space": "R^d_standard",
     "field": "R",
     "feature_dimension": 11,
+    "alchemy_feature_dimension": 18,
     "embeddings_are_subspace": false,
     "embedding_map": "Phi: player career data -> bar{z}_i in R^d (nonlinear pipeline)",
     "x3p_ar_career_coordinate": "mean of finite season x3p_ar_z values (skip-NA)"

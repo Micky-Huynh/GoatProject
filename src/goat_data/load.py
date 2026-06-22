@@ -43,3 +43,50 @@ def load_advanced_seasons(paths: GoatPaths) -> pd.DataFrame:
     for column in raw_columns:
         frame[column] = pd.to_numeric(frame[column], errors="coerce")
     return frame
+
+def load_shooting_seasons(paths: GoatPaths) -> pd.DataFrame:
+    shooting = pd.read_csv(paths.raw_data / "Player Shooting.csv")
+    keep = [
+        "player_id",
+        "player",
+        "season",
+        "team",
+        "pos",
+        "mp",
+        "percent_fga_from_x0_3_range",
+        "percent_fga_from_x3_10_range",
+        "percent_fga_from_x10_16_range",
+        "percent_fga_from_x16_3p_range",
+        "percent_fga_from_x3p_range",
+        "percent_corner_3s_of_3pa",
+        "percent_dunks_of_fga",
+        "num_heaves_attempted",
+    ]
+    frame = _dedupe_player_season(shooting[keep], _pick_advanced_row)
+    frame["season"] = frame["season"].astype(int)
+    frame["mp"] = pd.to_numeric(frame["mp"], errors="coerce")
+    numeric_cols = [col for col in keep if col not in {"player_id", "player", "season", "team", "pos"}]
+    for column in numeric_cols:
+        frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    return frame
+
+
+def load_play_by_play_seasons(paths: GoatPaths) -> pd.DataFrame:
+    pbp = pd.read_csv(paths.raw_data / "Player Play By Play.csv")
+    keep = ["player_id", "player", "season", "team", "pos", "mp", "and1"]
+    frame = _dedupe_player_season(pbp[keep], _pick_advanced_row)
+    frame["season"] = frame["season"].astype(int)
+    frame["mp"] = pd.to_numeric(frame["mp"], errors="coerce")
+    frame["and1"] = pd.to_numeric(frame["and1"], errors="coerce")
+    return frame
+
+
+def load_player_totals_seasons(paths: GoatPaths) -> pd.DataFrame:
+    totals = pd.read_csv(paths.raw_data / "Player Totals.csv")
+    keep = ["player_id", "player", "season", "team", "pos", "mp", "fga"]
+    frame = _dedupe_player_season(totals[keep], _pick_advanced_row)
+    frame["season"] = frame["season"].astype(int)
+    frame["mp"] = pd.to_numeric(frame["mp"], errors="coerce")
+    frame["fga"] = pd.to_numeric(frame["fga"], errors="coerce")
+    return frame
+

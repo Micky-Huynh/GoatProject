@@ -87,3 +87,10 @@ def test_feature_dimension_matches_config(paths, manifest):
     z_cols = [z_column(name) for name in feature_names]
     assert manifest["feature_columns"] == z_cols
     assert manifest["vector_space"]["feature_dimension"] == len(z_cols)
+
+
+def test_alchemy_feature_columns_length(manifest):
+    assert len(manifest["feature_columns"]) == 11
+    assert len(manifest["alchemy_feature_columns"]) == 18
+    assert manifest["vector_space"]["alchemy_feature_dimension"] == 18
+

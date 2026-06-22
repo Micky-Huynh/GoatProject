@@ -20,8 +20,10 @@ from goat_data.config import (
 from goat_data.covariance import build_league_covariance
 from goat_data.era_adjust import era_adjust
 from goat_data.labels import build_season_labels
+from goat_data.excitement import build_career_excitement
 from goat_data.load import load_advanced_seasons
 from goat_data.players import resolve_allowlist
+from goat_data.shooting_zones import build_career_shooting_zones
 from goat_data.playoffs import build_playoff_context
 
 
@@ -61,6 +63,13 @@ def _player_manifest_rows(career_vectors: pd.DataFrame) -> list[dict]:
         )
     return rows
 
+def _alchemy_columns(paths) -> tuple[list[str], list[str]]:
+    zones_cfg = load_yaml(paths.root / "config" / "scoring_zones.yaml")
+    zone_z_cols = [meta["z_column"] for meta in zones_cfg["zones"].values()]
+    alchemy_z_cols = ["showman_z", *zone_z_cols]
+    alchemy_meta_cols = ["showman_partial", *[meta["share_column"] for meta in zones_cfg["zones"].values()]]
+    return alchemy_z_cols, alchemy_meta_cols
+
 
 def run(paths=None) -> dict:
     goat_paths = resolve_paths(paths)
@@ -93,6 +102,20 @@ def run(paths=None) -> dict:
         feature_names,
         allowlist.display_names,
     )
+
+    excitement_result = build_career_excitement(
+        goat_paths,
+        allowlist_seasons,
+        allowlist.player_ids,
+    )
+    zones_result = build_career_shooting_zones(goat_paths, allowlist_seasons)
+    alchemy_z_cols, alchemy_meta_cols = _alchemy_columns(goat_paths)
+
+    excitement_cols = ["player_id", "showman_z", "showman_raw", "showman_partial"]
+    career_vectors = career_vectors.merge(excitement_result.career[excitement_cols], on="player_id", how="left")
+    career_vectors = career_vectors.merge(zones_result.career, on="player_id", how="left")
+    career_vectors[alchemy_z_cols] = career_vectors[alchemy_z_cols].fillna(0.0)
+    career_vectors["showman_partial"] = career_vectors["showman_partial"].fillna(False).astype(bool)
 
     playoff_result = build_playoff_context(
         goat_paths,
@@ -134,6 +157,8 @@ def run(paths=None) -> dict:
             "league_career_covariance": "processed/league_career_covariance.npy",
         },
         "feature_columns": z_cols,
+        "alchemy_feature_columns": z_cols + alchemy_z_cols,
+        "alchemy_metadata_columns": alchemy_meta_cols,
         "metadata_columns": ["player_id", "season", "position", "age", "pre_three_point_line"],
         "era_adjustment": {
             "method": "z_score",
@@ -158,6 +183,7 @@ def run(paths=None) -> dict:
             "ambient_space": "R^d_standard",
             "field": "R",
             "feature_dimension": len(z_cols),
+            "alchemy_feature_dimension": len(z_cols) + len(alchemy_z_cols),
             "embeddings_are_subspace": False,
             "embedding_map": "Phi: player career data -> bar{z}_i in R^d (nonlinear pipeline)",
             "x3p_ar_career_coordinate": "mean of finite season x3p_ar_z values (skip-NA)",
