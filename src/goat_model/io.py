@@ -112,6 +112,10 @@ def z_columns_from_manifest(manifest: dict[str, Any]) -> list[str]:
     return list(manifest["feature_columns"])
 
 
+def alchemy_z_columns_from_manifest(manifest: dict[str, Any]) -> list[str]:
+    return list(manifest["alchemy_feature_columns"])
+
+
 def ensure_output_path(ctx: GoatContext, filename: str) -> Path:
     path = ctx.output_dir / filename
     path.parent.mkdir(parents=True, exist_ok=True)

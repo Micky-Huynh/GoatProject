@@ -55,6 +55,12 @@ def _pca_whitened_l2_scores(
     return np.linalg.norm(whitened, axis=1)
 
 
+def _alchemy_display_columns(career_vectors: pd.DataFrame) -> list[str]:
+    alchemy_cols = ["showman_z", "showman_partial"]
+    zone_share_cols = [col for col in career_vectors.columns if col.startswith("zone_") and col.endswith("_share")]
+    return [col for col in alchemy_cols + sorted(zone_share_cols) if col in career_vectors.columns]
+
+
 def build_rankings(
     career_vectors: pd.DataFrame,
     z_cols: list[str],
@@ -85,6 +91,11 @@ def build_rankings(
     rankings["rank_l2"] = _rank_ascending(rankings["score_l2"])
     rankings["rank_mahalanobis"] = _rank_ascending(rankings["score_mahalanobis"])
     rankings["rank_pca_whitened_l2"] = _rank_ascending(rankings["score_pca_whitened_l2"])
+
+    display_cols = _alchemy_display_columns(career_vectors)
+    if display_cols:
+        meta = career_vectors[["player_id", *display_cols]].drop_duplicates("player_id")
+        rankings = rankings.merge(meta, on="player_id", how="left")
 
     rankings = rankings.sort_values("rank_pca_whitened_l2", kind="mergesort").reset_index(drop=True)
     return rankings

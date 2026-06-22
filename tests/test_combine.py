@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from goat_model.combine import (
+    alchemy_config_hash,
     blend_vectors,
     build_alchemy_cache,
     canonical_pair_key,
@@ -14,7 +15,14 @@ from goat_model.combine import (
     nearest_neighbor,
     save_alchemy_cache,
 )
-from goat_model.io import load_career_vectors, load_context, load_manifest, load_yaml, z_columns_from_manifest
+from goat_model.io import (
+    alchemy_z_columns_from_manifest,
+    load_career_vectors,
+    load_context,
+    load_manifest,
+    load_yaml,
+    z_columns_from_manifest,
+)
 
 
 def _default_goat_root() -> Path:
@@ -25,7 +33,7 @@ def _sample_context():
     ctx = load_context(_default_goat_root())
     manifest = load_manifest(ctx)
     careers = load_career_vectors(ctx, manifest)
-    z_cols = z_columns_from_manifest(manifest)
+    z_cols = alchemy_z_columns_from_manifest(manifest)
     alchemy_cfg = load_yaml(ctx.root / "config" / "alchemy.yaml")
     return ctx, manifest, careers, z_cols, alchemy_cfg
 
@@ -34,11 +42,11 @@ def test_canonical_pair_key_is_order_independent() -> None:
     assert canonical_pair_key("b", "a") == canonical_pair_key("a", "b")
 
 
-def test_blend_vectors_stays_in_r11() -> None:
-    u = np.ones(11)
-    v = np.arange(11, dtype=float)
+def test_blend_vectors_stays_in_r18() -> None:
+    u = np.ones(18)
+    v = np.arange(18, dtype=float)
     w = blend_vectors(u, v, alpha=0.5, beta=0.5)
-    assert w.shape == (11,)
+    assert w.shape == (18,)
 
 
 def test_combine_same_pair_always_same_result() -> None:
@@ -48,7 +56,7 @@ def test_combine_same_pair_always_same_result() -> None:
     second = combine_players(ids[1], ids[0], careers, z_cols, alchemy_cfg)
     assert first["nearest_player_id"] == second["nearest_player_id"]
     assert first["blend_vector"] == second["blend_vector"]
-    assert len(first["blend_vector"]) == 11
+    assert len(first["blend_vector"]) == 18
 
 
 def test_nearest_neighbor_self_is_zero_distance() -> None:
@@ -75,9 +83,19 @@ def test_cache_hash_invalidation() -> None:
     assert lookup_cached_combine(ids[0], ids[1], cache, expected_config_hash="deadbeef") is None
 
 
+def test_cache_hash_changes_when_alchemy_columns_change() -> None:
+    _, manifest, _, _, alchemy_cfg = _sample_context()
+    baseline_hash = alchemy_config_hash(alchemy_cfg, manifest)
+    mutated = dict(manifest)
+    mutated["alchemy_feature_columns"] = list(manifest["alchemy_feature_columns"]) + ["extra_z"]
+    assert alchemy_config_hash(alchemy_cfg, mutated) != baseline_hash
+
+
 def test_build_and_save_cache_roundtrip(tmp_path: Path) -> None:
     _, manifest, careers, z_cols, alchemy_cfg = _sample_context()
     cache = build_alchemy_cache(careers.head(5), z_cols, alchemy_cfg, manifest)
+    assert cache["schema_version"] == "2.0.0"
+    assert cache["feature_dimension"] == 18
     out = tmp_path / "alchemy_cache.json"
     save_alchemy_cache(out, cache)
     assert out.exists()

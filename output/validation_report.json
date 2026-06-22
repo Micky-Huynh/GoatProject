@@ -17,7 +17,7 @@
     }
   },
   "secondary_metrics": {
-    "career_goat_index_vs_mean_test_prediction_spearman": 0.7046558704453442,
+    "career_goat_index_vs_mean_test_prediction_spearman": 0.7301619433198381,
     "player_count": 39
   },
   "inputs": {

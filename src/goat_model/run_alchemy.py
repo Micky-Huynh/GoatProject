@@ -3,14 +3,20 @@ from __future__ import annotations
 from pathlib import Path
 
 from .combine import alchemy_config_hash, build_alchemy_cache, save_alchemy_cache
-from .io import load_career_vectors, load_context, load_manifest, load_yaml, z_columns_from_manifest
+from .io import (
+    alchemy_z_columns_from_manifest,
+    load_career_vectors,
+    load_context,
+    load_manifest,
+    load_yaml,
+)
 
 
 def run(goat_root: Path | None = None) -> Path:
     ctx = load_context(goat_root)
     manifest = load_manifest(ctx)
     career_vectors = load_career_vectors(ctx, manifest)
-    z_cols = z_columns_from_manifest(manifest)
+    z_cols = alchemy_z_columns_from_manifest(manifest)
     alchemy_cfg = load_yaml(ctx.root / "config" / "alchemy.yaml")
 
     cache = build_alchemy_cache(career_vectors, z_cols, alchemy_cfg, manifest)

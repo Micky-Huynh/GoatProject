@@ -57,7 +57,7 @@ def alchemy_config_hash(alchemy_cfg: dict[str, Any], manifest: dict[str, Any]) -
     payload = json.dumps(
         {
             "alchemy": alchemy_cfg,
-            "feature_columns": manifest.get("feature_columns"),
+            "alchemy_feature_columns": manifest.get("alchemy_feature_columns"),
             "manifest_hashes": manifest_hashes,
         },
         sort_keys=True,
@@ -135,7 +135,7 @@ def build_alchemy_cache(
             entries[pair_key] = result
 
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "2.0.0",
         "config_hash": alchemy_config_hash(alchemy_cfg, manifest),
         "player_count": len(ids),
         "feature_dimension": len(z_cols),
