@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How It Works — GOAT Explorer</title>
+
+  <script>
+    (function () {
+      if (new URLSearchParams(location.search).get('embed') === '1') {
+        document.documentElement.classList.add('site-embed');
+      }
+      window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'goat-resize') {
+          window.dispatchEvent(new Event('resize'));
+        }
+      });
+    })();
+  </script>
+  <style>
+    html.site-embed .site-chrome { display: none !important; }
+    html.site-embed body { overflow: auto; }
+  </style>
+
+  <style>
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 36px 24px 64px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.45rem;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+    .lead {
+      text-align: center;
+      color: #8b949e;
+      font-size: 0.92rem;
+      max-width: 640px;
+      margin: 0 auto 28px;
+    }
+    .toc {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 32px;
+      font-size: 0.88rem;
+    }
+    .toc h2 {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .toc ul {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+    .toc a { color: #f97316; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .model-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 18px 20px 20px;
+      margin-bottom: 24px;
+    }
+    .model-card h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #f97316;
+    }
+    .model-card h3 {
+      margin: 16px 0 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .model-card h3:first-of-type { margin-top: 0; }
+    .model-card p {
+      margin: 0 0 10px;
+      font-size: 0.88rem;
+    }
+    .model-card ul {
+      margin: 0 0 10px;
+      padding-left: 1.2rem;
+      font-size: 0.86rem;
+    }
+    .formula {
+      margin: 10px 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      overflow-x: auto;
+    }
+    .note {
+      color: #8b949e;
+      font-size: 0.82rem;
+      margin-top: 8px;
+    }
+    .footer-note {
+      text-align: center;
+      color: #8b949e;
+      font-size: 0.82rem;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid #30363d;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>How It Works</h1>
+    <p class="lead">Plain-language guide to each model on this site — what it shows, and the math behind the scores.</p>
+
+    <nav class="toc" aria-label="Models">
+      <h2>Models on this site</h2>
+      <ul>
+        <li><a href="#career-vectors">Career stat vectors (foundation)</a></li>
+        <li><a href="#goat-ranking">GOAT ranking (bar chart)</a></li>
+        <li><a href="#pca-maps">PCA map &amp; 3D explorer</a></li>
+        <li><a href="#impact-crown">Impact crown (3D)</a></li>
+        <li><a href="#similarity">Similarity heatmap</a></li>
+        <li><a href="#alchemy">Alchemy Lab</a></li>
+      </ul>
+    </nav>
+
+    <article id="career-vectors" class="model-card">
+      <h2>Career stat vectors</h2>
+      <h3>What it is and what it does</h3>
+      <p>
+        Every player is represented by an 11-number <strong>career vector</strong> in stat space.
+        Each number is an era-adjusted z-score for one skill or impact stat (BPM, VORP, PER, win shares,
+        shooting, playmaking, defense, etc.). This vector is the shared input for rankings, maps, heatmaps,
+        and most scores on the site.
+      </p>
+      <h3>How we calculate career z-scores</h3>
+      <p>For each season and position group, raw stats are oriented (higher-is-better or inverted for turnovers), then z-scored against the full league that year:</p>
+      <p class="formula">z<sub>f</sub> = (x<sub>f</sub> &minus; &mu;<sub>f,group</sub>) / &sigma;<sub>f,group</sub></p>
+      <p>Career value for feature <em>f</em> is the unweighted mean of season z-scores (seasons with &ge; 200 minutes). The career vector is:</p>
+      <p class="formula"><strong>x</strong> = (z<sub>BPM</sub>, z<sub>VORP</sub>, z<sub>PER</sub>, z<sub>WS</sub>, &hellip; ) &isin; &#8477;<sup>11</sup></p>
+      <p class="note">The allowlist of curated players is filtered after league-wide adjustment — z-scores are not recomputed only among legends.</p>
+    </article>
+
+    <article id="goat-ranking" class="model-card">
+      <h2>GOAT ranking (bar chart)</h2>
+      <h3>What it is and what it does</h3>
+      <p>
+        The bar chart on the Overview page ranks allowlist players by a single <strong>composite GOAT score</strong>.
+        #1 at the top is the highest rank on this model. It blends unusual stat profiles, championship credit,
+        and a clutch/consensus adjustment — not any one box-score line.
+      </p>
+      <h3>How we calculate score_goat_index</h3>
+      <p class="formula">
+        score_goat_index = 1.0 &times; score_pca_whitened_l2<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&minus; 0.35 &times; championship_net<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 0.45 &times; clutch_penalty
+      </p>
+      <ul>
+        <li><strong>score_pca_whitened_l2</strong> — distance from the multivariate center in PCA-whitened space (how extreme the 11-stat profile is).</li>
+        <li><strong>championship_net</strong> — ring credit minus finals-loss debit, built from team strength and playoff depth.</li>
+        <li><strong>clutch_penalty</strong> — tax when stat dominance runs ahead of playoff success and peer awards.</li>
+      </ul>
+      <p class="note">Lower composite scores rank higher on the chart. Use rank order (#1, #2, &hellip;) to compare players — bar length is the composite number, not a simple quality meter.</p>
+    </article>
+
+    <article id="pca-maps" class="model-card">
+      <h2>PCA map &amp; 3D explorer</h2>
+      <h3>What it is and what it does</h3>
+      <p>
+        PCA (principal component analysis) projects each player&rsquo;s 11-stat vector onto 2D or 3D axes so you can
+        see who plays a similar <em>style</em> or sits in a similar part of stat space. Nearby dots share profiles;
+        distance on the chart is not &ldquo;better vs worse.&rdquo;
+      </p>
+      <h3>How we calculate PCA coordinates</h3>
+      <p>PCA is fit on all full-league career vectors, then each player is projected onto the top components:</p>
+      <p class="formula">PC<sub>m</sub> = (<strong>x</strong> &minus; &mu;)<sup>&top;</sup> <strong>v</strong><sub>m</sub></p>
+      <p>where <strong>v</strong><sub>m</sub> is the m-th principal axis. The 2D scatter uses (PC1, PC2); the 3D explorer uses (PC1, PC2, PC3) — together about 65.4% of variance.</p>
+      <p class="note">PC1 tends to capture overall impact loading; PC2 and PC3 often reflect style (spacing, playmaking vs rim protection). Axes are not universal good/bad directions.</p>
+    </article>
+
+    <article id="impact-crown" class="model-card">
+      <h2>Impact crown (3D explorer)</h2>
+      <h3>What it is and what it does</h3>
+      <p>
+        In the interactive 3D view, the <strong>gold crown</strong> marks the player with the highest
+        <strong>overall impact</strong> among the players you currently have visible. Orb size also scales with
+        this impact score. Titles and the bar-chart index do not affect the crown.
+      </p>
+      <h3>How we calculate impact_z</h3>
+      <p class="formula">impact_z = &frac14; ( z<sub>BPM</sub> + z<sub>VORP</sub> + z<sub>PER</sub> + z<sub>WS</sub> )</p>
+      <p>Crown holder = argmax impact_z over the visible checkbox set.</p>
+    </article>
+
+    <article id="similarity" class="model-card">
+      <h2>Similarity heatmap</h2>
+      <h3>What it is and what it does</h3>
+      <p>
+        The heatmap shows <strong>play-style similarity</strong> between pairs of allowlist players.
+        Bright cells mean profiles point in a similar direction in stat space; it does not rank greatness.
+      </p>
+      <h3>How we calculate cosine similarity</h3>
+      <p>Each career vector is L2-normalized, then pairwise dot products give similarity in [&minus;1, 1]:</p>
+      <p class="formula">similarity(i, j) = x&#770;<sub>i</sub><sup>&top;</sup> x&#770;<sub>j</sub>, &nbsp; x&#770; = <strong>x</strong> / ||<strong>x</strong>||&#8322;</p>
+    </article>
+
+    <article id="alchemy" class="model-card">
+      <h2>Alchemy Lab</h2>
+      <h3>What it is and what it does</h3>
+      <p>
+        Alchemy blends two players into a <strong>hypothetical</strong> stat profile in an extended &#8477;<sup>18</sup> space
+        (11 core stats + showman excitement + six shot-zone z-scores), then finds the nearest real allowlist player.
+        Exploratory only — it does not change GOAT rankings.
+      </p>
+      <h3>How we calculate the blend and discovery</h3>
+      <p><strong>Combine</strong> with blend weight &alpha; from the slider (default 0.5):</p>
+      <p class="formula">C(<strong>u</strong>, <strong>v</strong>) = &alpha;&middot;<strong>u</strong> + (1&minus;&alpha;)&middot;<strong>v</strong> &nbsp; in &#8477;<sup>18</sup></p>
+      <p><strong>Discovery</strong> — nearest neighbor by Euclidean distance:</p>
+      <p class="formula">D(<strong>w</strong>) = argmin<sub>p</sub> || <strong>w</strong> &minus; <strong>z</strong><sub>p</sub> ||&#8322;</p>
+      <p class="note">Orb positions use PCA of the 11 core stats; the reported L2 distance uses the full 18-dim alchemy vector. See the Alchemy Lab &ldquo;Math explanation&rdquo; button for a worked example.</p>
+    </article>
+
+    <p class="footer-note">Exploratory layout only. Gold crown = #1 overall impact among currently visible players (mean BPM/VORP/PER/WS z). Bar chart uses score_goat_index (PCA + team-weighted titles + clutch/consensus adjustment).</p>
+  </main>
+</body>
+</html>

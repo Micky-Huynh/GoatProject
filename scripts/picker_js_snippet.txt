@@ -1,0 +1,205 @@
+    const orbMeshes = [];
+    const orbGroups = new Map();
+    const spokeOpacity = sceneTheme.layout === 'desmos' ? 0.35 : 0.22;
+    const lineMaterial = new THREE.LineBasicMaterial({{
+      color: new THREE.Color(sceneTheme.spoke),
+      transparent: true,
+      opacity: spokeOpacity,
+    }});
+
+    const textureLoader = new THREE.TextureLoader();
+    const profilePanel = document.getElementById('profile-panel');
+    const playerList = document.getElementById('player-list');
+    const selectionCount = document.getElementById('selection-count');
+    const playerFilter = document.getElementById('player-filter');
+
+    const selectedIds = new Set(
+      players.filter((player) => player.selected_default).map((player) => player.id),
+    );
+    let pinnedPlayer = null;
+
+    function visiblePlayers() {{
+      return players.filter((player) => selectedIds.has(player.id));
+    }}
+
+    function defaultBestPlayer() {{
+      const visible = visiblePlayers();
+      if (visible.length === 0) return null;
+      return visible.find((player) => player.is_best) || visible.slice().sort((a, b) => a.rank_headline - b.rank_headline)[0];
+    }}
+
+    function aspectsForVisible(player) {{
+      const visible = visiblePlayers();
+      if (!player.aspects || visible.length === 0) return [];
+      return player.aspects.map((aspect) => {{
+        const values = visible.map((entry) => {{
+          const match = entry.aspects.find((row) => row.key === aspect.key);
+          return match ? match.z_avg : 0;
+        }});
+        const minVal = Math.min(...values);
+        const maxVal = Math.max(...values);
+        const span = Math.max(maxVal - minVal, 1e-9);
+        const score = ((aspect.z_avg - minVal) / span) * 100;
+        const rank = [...visible]
+          .sort((a, b) => {{
+            const az = a.aspects.find((row) => row.key === aspect.key)?.z_avg ?? 0;
+            const bz = b.aspects.find((row) => row.key === aspect.key)?.z_avg ?? 0;
+            return bz - az;
+          }})
+          .findIndex((entry) => entry.id === player.id) + 1;
+        return {{
+          ...aspect,
+          score: Math.round(score * 10) / 10,
+          rank,
+        }};
+      }});
+    }}
+
+    function renderAspectRows(aspects, cohortSize) {{
+      if (!aspects || aspects.length === 0) {{
+        return '<p class="profile-empty">Skill aspect data unavailable.</p>';
+      }}
+      return aspects.map((aspect) => `
+        <div class="aspect-row">
+          <div class="aspect-head">
+            <span>${{aspect.label}}</span>
+            <span>#${{aspect.rank}} of ${{cohortSize}}</span>
+          </div>
+          <div class="aspect-track">
+            <div class="aspect-fill" style="width:${{aspect.score}}%"></div>
+          </div>
+        </div>
+      `).join('');
+    }}
+
+    function renderProfilePanel(player) {{
+      if (!player) {{
+        profilePanel.innerHTML = '<p class="profile-empty">Select players on the left, then hover an orb for playmaking, defense, scoring, and overall impact within the visible cohort.</p>';
+        return;
+      }}
+      const cohortSize = visiblePlayers().length;
+      const bestBadge = player.is_best ? '<div class="best-badge">★ #1 headline rank</div>' : '';
+      profilePanel.innerHTML = `
+        <div class="profile-card ${{player.is_best ? 'is-best' : ''}}">
+          ${{bestBadge}}
+          <h2>${{player.name}}</h2>
+          <p class="profile-rank">Headline rank #${{player.rank_headline}} · score ${{player.headline_score.toFixed(2)}}</p>
+          <p class="profile-rank">L2 #${{player.rank_l2}} · Mahalanobis #${{player.rank_mahalanobis}}</p>
+          ${{renderAspectRows(aspectsForVisible(player), cohortSize)}}
+        </div>
+      `;
+    }}
+
+    function updateSelectionCount() {{
+      selectionCount.textContent = `${{selectedIds.size}} / ${{players.length}} visible`;
+    }}
+
+    function applySelection() {{
+      for (const [playerId, group] of orbGroups.entries()) {{
+        const visible = selectedIds.has(playerId);
+        group.meshes.forEach((mesh) => {{ mesh.visible = visible; }});
+        group.spokes.forEach((mesh) => {{ mesh.visible = visible; }});
+      }}
+      updateSelectionCount();
+      if (pinnedPlayer && !selectedIds.has(pinnedPlayer.id)) {{
+        pinnedPlayer = null;
+      }}
+      renderProfilePanel(pinnedPlayer || defaultBestPlayer());
+    }}
+
+    function buildPlayerPicker() {{
+      const sorted = players.slice().sort((a, b) => a.rank_headline - b.rank_headline);
+      playerList.innerHTML = sorted.map((player) => `
+        <label class="player-option" data-name="${{player.name.toLowerCase()}}">
+          <input type="checkbox" value="${{player.id}}" ${{selectedIds.has(player.id) ? 'checked' : ''}} />
+          <span>#${{player.rank_headline}} ${{player.name}}</span>
+        </label>
+      `).join('');
+
+      playerList.querySelectorAll('input[type="checkbox"]').forEach((input) => {{
+        input.addEventListener('change', () => {{
+          if (input.checked) selectedIds.add(input.value);
+          else selectedIds.delete(input.value);
+          applySelection();
+        }});
+      }});
+
+      document.getElementById('reset-default').addEventListener('click', () => {{
+        selectedIds.clear();
+        players.filter((player) => player.selected_default).forEach((player) => selectedIds.add(player.id));
+        playerList.querySelectorAll('input[type="checkbox"]').forEach((input) => {{
+          input.checked = selectedIds.has(input.value);
+        }});
+        applySelection();
+      }});
+      document.getElementById('select-all').addEventListener('click', () => {{
+        players.forEach((player) => selectedIds.add(player.id));
+        playerList.querySelectorAll('input[type="checkbox"]').forEach((input) => {{ input.checked = true; }});
+        applySelection();
+      }});
+      document.getElementById('clear-all').addEventListener('click', () => {{
+        selectedIds.clear();
+        playerList.querySelectorAll('input[type="checkbox"]').forEach((input) => {{ input.checked = false; }});
+        applySelection();
+      }});
+      playerFilter.addEventListener('input', () => {{
+        const query = playerFilter.value.trim().toLowerCase();
+        playerList.querySelectorAll('.player-option').forEach((row) => {{
+          row.style.display = row.dataset.name.includes(query) ? 'flex' : 'none';
+        }});
+      }});
+      updateSelectionCount();
+    }}
+
+    async function buildOrbs() {{
+      for (const player of players) {{
+        const position = new THREE.Vector3(player.x, player.y, player.z);
+        const spokes = [];
+        if (showOriginLines) {{
+          const geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0),
+            position.clone(),
+          ]);
+          const line = new THREE.Line(geometry, lineMaterial);
+          scene.add(line);
+          spokes.push(line);
+        }}
+
+        const texture = await textureLoader.loadAsync(player.image);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+
+        const material = new THREE.MeshBasicMaterial({{ map: texture }});
+        const orb = new THREE.Mesh(new THREE.SphereGeometry(player.radius, 48, 48), material);
+        orb.position.copy(position);
+        orb.userData = player;
+        scene.add(orb);
+        const meshes = [orb];
+        orbMeshes.push(orb);
+
+        if (player.is_best) {{
+          const glow = new THREE.Mesh(
+            new THREE.SphereGeometry(player.radius * 1.12, 32, 32),
+            new THREE.MeshBasicMaterial({{ color: 0xfbbf24, transparent: true, opacity: 0.18 }}),
+          );
+          glow.position.copy(position);
+          scene.add(glow);
+          meshes.push(glow);
+
+          const halo = new THREE.Mesh(
+            new THREE.SphereGeometry(player.radius * 1.22, 24, 24),
+            new THREE.MeshBasicMaterial({{ color: 0xfbbf24, transparent: true, opacity: 0.45, wireframe: true }}),
+          );
+          halo.position.copy(position);
+          scene.add(halo);
+          meshes.push(halo);
+        }}
+
+        orbGroups.set(player.id, {{ player, meshes, spokes }});
+      }}
+      buildPlayerPicker();
+      applySelection();
+    }}

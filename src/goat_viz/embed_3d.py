@@ -1,230 +1,22 @@
 from __future__ import annotations
 
-import base64
-import re
-import unicodedata
-import yaml
 import json
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Any
 
-import matplotlib.pyplot as plt
-import pandas as pd
-from matplotlib.patches import Circle
-
+from .alchemy_js import inline_click_js, inline_client_js
 from .io import VizArtifacts, VizPaths
-from .alchemy_js import click_js, client_js
-from .profiles import compute_player_profiles
+from .site_shell import SITE_EMBED_HEAD, SITE_NAV_MESSAGE_JS
+from .scene_shared import (
+    build_players_payload,
+    cumulative_3d_pct,
+    embed_scene_theme,
+    load_alchemy_meta,
+    merge_coords_and_rankings,
+    variance_pct,
+)
 
 
-
-
-def _normalize_display_name(name: str) -> str:
-    text = unicodedata.normalize("NFKD", str(name))
-    text = "".join(ch for ch in text if not unicodedata.combining(ch))
-    return re.sub(r"\s+", " ", text).strip().lower()
-
-
-def _default_viz_player_ids(paths: VizPaths, merged: pd.DataFrame) -> set[str]:
-    allowlist_path = paths.goat_root / "config" / "allowlist.yaml"
-    if not allowlist_path.exists():
-        top = merged.sort_values("rank_pca_whitened_l2").head(21)
-        return set(top["player_id"].astype(str))
-
-    cfg = yaml.safe_load(allowlist_path.read_text(encoding="utf-8"))
-    wanted = {_normalize_display_name(entry["name"]) for entry in cfg.get("default_viz_players", [])}
-    ids = {
-        str(row.player_id)
-        for row in merged.itertuples(index=False)
-        if _normalize_display_name(str(row.display_name)) in wanted
-    }
-    if ids:
-        return ids
-    top = merged.sort_values("rank_pca_whitened_l2").head(21)
-    return set(top["player_id"].astype(str))
-
-def _theme(config: dict[str, Any]) -> dict[str, str]:
-    theme = config.get("theme", {})
-    return {
-        "background": theme.get("background", "#0d1117"),
-        "text": theme.get("text", "#e6edf3"),
-        "accent": theme.get("accent", "#f97316"),
-    }
-
-
-def _embed_scene_theme(config: dict[str, Any]) -> dict[str, str]:
-    embed_cfg = config.get("embed_3d", {})
-    scene = embed_cfg.get("scene", {})
-    style = embed_cfg.get("scene_style", "dark")
-    if style == "desmos":
-        defaults = {
-            "background": "#ffffff",
-            "text": "#2f3437",
-            "muted": "#6b7280",
-            "accent": "#2d70b3",
-            "grid_major": "#c8c8c8",
-            "grid_minor": "#e8e8e8",
-            "axis": "#8a8a8a",
-            "box": "#d4d4d4",
-            "spoke": "#b8bcc2",
-            "chrome_border": "#e5e7eb",
-            "tooltip_bg": "#ffffff",
-            "tooltip_border": "#d1d5db",
-            "layout": "desmos",
-        }
-    else:
-        theme = _theme(config)
-        defaults = {
-            "background": theme["background"],
-            "text": theme["text"],
-            "muted": "rgba(230, 237, 243, 0.75)",
-            "accent": theme["accent"],
-            "grid_major": theme["accent"],
-            "grid_minor": "#30363d",
-            "axis": theme["text"],
-            "box": "#30363d",
-            "spoke": theme["text"],
-            "chrome_border": "#30363d",
-            "tooltip_bg": "rgba(22, 27, 34, 0.96)",
-            "tooltip_border": "#30363d",
-            "layout": "classic",
-        }
-    return {**defaults, **scene}
-
-
-def _variance_pct(pca_explained_variance: dict[str, Any], component: str) -> float:
-    for row in pca_explained_variance.get("components", []):
-        if row.get("component") == component:
-            return float(row.get("explained_variance_ratio", 0.0)) * 100.0
-    return 0.0
-
-
-def _cumulative_3d_pct(pca_explained_variance: dict[str, Any]) -> float:
-    return sum(_variance_pct(pca_explained_variance, name) for name in ("PC1", "PC2", "PC3"))
-
-
-def _origin_inclusive_axis_range(values: pd.Series, pad_ratio: float = 0.14) -> tuple[float, float]:
-    vmin = float(values.min())
-    vmax = float(values.max())
-    lo = min(0.0, vmin)
-    hi = max(0.0, vmax)
-    span = max(hi - lo, 1e-6)
-    pad = span * pad_ratio
-    return lo - pad, hi + pad
-
-
-def _map_axis(value: float, lo: float, hi: float) -> float:
-    span = max(hi - lo, 1e-6)
-    return ((value - lo) / span) * 2.0 - 1.0
-
-
-def _merge_coords_and_rankings(artifacts: VizArtifacts) -> pd.DataFrame:
-    coords = artifacts.pca_coordinates.copy()
-    rankings = artifacts.rankings.copy()
-    rank_cols = [
-        "player_id",
-        "score_l2",
-        "score_mahalanobis",
-        "score_pca_whitened_l2",
-        "rank_l2",
-        "rank_mahalanobis",
-        "rank_pca_whitened_l2",
-        "championships",
-        "playoff_seasons",
-        "playoff_performance",
-        "stat_outlier_z",
-        "team_strength_index",
-        "clutch_penalty",
-        "score_goat_index",
-    ]
-    rank_cols = [c for c in rank_cols if c in rankings.columns]
-    merged = coords.merge(rankings[rank_cols], on="player_id", how="left")
-    if "rank_pca_whitened_l2" not in merged.columns:
-        merged["rank_pca_whitened_l2"] = merged["score_pca_whitened_l2"].rank(
-            method="min", ascending=True
-        ).astype(int)
-    return merged.sort_values("rank_pca_whitened_l2")
-
-
-def _initials(display_name: str) -> str:
-    parts = display_name.replace(".", "").split()
-    if not parts:
-        return "?"
-    if len(parts) == 1:
-        return parts[0][:2].upper()
-    return (parts[0][0] + parts[-1][0]).upper()
-
-
-def _write_fallback_headshot(path: Path, display_name: str, scene: dict[str, str]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(2, 2), dpi=120)
-    fig.patch.set_facecolor(scene["background"])
-    ax.set_facecolor(scene["background"])
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.axis("off")
-    circle = Circle((0.5, 0.5), 0.42, facecolor=scene["accent"], edgecolor=scene["text"], linewidth=2)
-    ax.add_patch(circle)
-    ax.text(
-        0.5,
-        0.5,
-        _initials(display_name),
-        ha="center",
-        va="center",
-        fontsize=28,
-        fontweight="bold",
-        color=scene["background"],
-    )
-    fig.savefig(path, bbox_inches="tight", pad_inches=0.02, facecolor=scene["background"])
-    plt.close(fig)
-
-
-def _download_headshot(url: str, dest: Path) -> bool:
-    request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "GoatProject-viz/1.0 (local stat-space explorer)"},
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=20) as response:
-            payload = response.read()
-    except (urllib.error.URLError, TimeoutError, OSError):
-        return False
-    if len(payload) < 800 or not payload.startswith(b"\xff\xd8") and not payload.startswith(b"\x89PNG"):
-        return False
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_bytes(payload)
-    return True
-
-
-def _ensure_player_image(
-    paths: VizPaths,
-    player_id: str,
-    display_name: str,
-    scene: dict[str, str],
-    image_cfg: dict[str, Any],
-) -> Path:
-    cache_dir = paths.viz_output / image_cfg.get("cache_dir", "assets/players")
-    dest = cache_dir / f"{player_id}.jpg"
-    if dest.exists() and dest.stat().st_size > 800:
-        return dest
-
-    url_template = image_cfg.get(
-        "url_template",
-        "https://www.basketball-reference.com/req/202106291/images/players/{player_id}.jpg",
-    )
-    url = url_template.format(player_id=player_id)
-    if not _download_headshot(url, dest):
-        _write_fallback_headshot(dest, display_name, scene)
-    return dest
-
-
-def _image_to_data_url(path: Path) -> str:
-    payload = path.read_bytes()
-    mime = "image/png" if payload.startswith(b"\x89PNG") else "image/jpeg"
-    encoded = base64.b64encode(payload).decode("ascii")
-    return f"data:{mime};base64,{encoded}"
 
 
 def _build_threejs_html(
@@ -240,18 +32,31 @@ def _build_threejs_html(
     pool_size: int,
     default_count: int,
     alchemy_meta: dict[str, Any] | None = None,
+    alchemy_inline: bool = False,
 ) -> str:
     payload = json.dumps(players)
     disclaimer_json = json.dumps(disclaimer)
     alchemy_json = json.dumps(alchemy_meta or {})
-    alchemy_block = client_js(alchemy_json)
-    alchemy_click = click_js()
+    alchemy_block = inline_client_js(alchemy_json) if alchemy_inline else ""
+    alchemy_click = inline_click_js() if alchemy_inline else ""
+    alchemy_toggle_row = (
+        '<button type="button" id="alchemy-toggle">⚗ Alchemy mode (pick 2 orbs)</button>'
+        if alchemy_inline else ''
+    )
+    alchemy_hint = (
+        'Drag to rotate · scroll to zoom · Alchemy: toggle ⚗ then click two orbs'
+        if alchemy_inline else 'Drag to rotate · scroll to zoom · hover orbs for profiles'
+    )
+    alchemy_mode_stub = '' if alchemy_inline else '    const alchemyMode = false;'
+    embed_head = SITE_EMBED_HEAD
+    nav_js = SITE_NAV_MESSAGE_JS
     return f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GOAT 3D Stat-Space Explorer</title>
+{embed_head}
   <style>
     html, body {{
       margin: 0;
@@ -281,6 +86,8 @@ def _build_threejs_html(
       font-weight: 600;
       line-height: 1.3;
     }}
+    .top-nav {{ display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }}
+    .top-nav a {{ color: {scene["accent"]}; font-size: 0.8rem; text-decoration: none; }}
     #chrome-top .subtitle {{
       margin: 5px 0 0;
       font-size: 0.8rem;
@@ -348,6 +155,12 @@ def _build_threejs_html(
       font-size: 0.74rem;
       cursor: pointer;
     }}
+    #crown-toggle.active {{
+      background: rgba(251, 191, 36, 0.18);
+      border-color: rgba(251, 191, 36, 0.55);
+      color: #fbbf24;
+      font-weight: 600;
+    }}
     #player-list {{
       overflow-y: auto;
       min-height: 0;
@@ -365,13 +178,11 @@ def _build_threejs_html(
       accent-color: {scene["accent"]};
     }}
     #profile-panel {{
-      pointer-events: none;
-    }}
-    #profile-panel {{
       border-left: 1px solid {scene["chrome_border"]};
       background: {scene["background"]};
       padding: 14px 16px;
       overflow-y: auto;
+      min-height: 0;
     }}
     .profile-card h2 {{
       margin: 0 0 6px;
@@ -494,19 +305,14 @@ def _build_threejs_html(
       font-size: 0.82rem;
       line-height: 1.45;
     }}
-      position: fixed;
-      display: none;
-      z-index: 20;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: {scene["tooltip_bg"]};
-      border: 1px solid {scene["tooltip_border"]};
-      color: {scene["text"]};
-      font-size: 0.85rem;
+    #tooltip {{
+      display: none !important;
+    }}
+    .profile-stats {{
+      margin: 0 0 12px;
+      color: {scene["muted"]};
+      font-size: 0.78rem;
       line-height: 1.45;
-      pointer-events: none;
-      max-width: min(260px, calc(100vw - 24px));
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     }}
   </style>
 </head>
@@ -527,15 +333,16 @@ def _build_threejs_html(
           <button type="button" id="reset-default">Default {default_count}</button>
           <button type="button" id="select-all">All</button>
           <button type="button" id="clear-all">None</button>
+          <button type="button" id="crown-toggle" class="active" title="Show gold halo on #1 impact among visible players">👑 Crown</button>
         </div>
-        <button type="button" id="alchemy-toggle">⚗ Alchemy mode (pick 2 orbs)</button>
+        {alchemy_toggle_row}
         <div id="player-list"></div>
       </aside>
       <div id="viewport"></div>
       <aside id="profile-panel" aria-live="polite"></aside>
     </div>
     <footer id="chrome-bottom">
-      <div id="hint" title="Clutch adj penalizes players whose BPM/VORP/PER/WS z-scores exceed their playoff performance + MVP/All-NBA consensus."><span class="legend-chip"><span class="legend-dot"></span>Gold crown = #1 impact among visible players</span>Drag to rotate · scroll to zoom · Alchemy: toggle ⚗ then click two orbs</div>
+      <div id="hint" title="Clutch adj penalizes players whose BPM/VORP/PER/WS z-scores exceed their playoff performance + MVP/All-NBA consensus."><span class="legend-chip"><span class="legend-dot"></span>Gold crown = #1 impact among visible players</span>{alchemy_hint}</div>
       <p id="disclaimer"></p>
     </footer>
     <div id="tooltip"></div>
@@ -548,6 +355,7 @@ def _build_threejs_html(
       }}
     }}
   </script>
+{nav_js}
   <script type="module">
     import * as THREE from 'three';
     import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
@@ -555,7 +363,7 @@ def _build_threejs_html(
     const sceneTheme = {json.dumps(scene)};
     const players = {payload};
 
-{alchemy_block}
+{alchemy_mode_stub}
     const showOriginLines = {json.dumps(show_origin_lines)};
     const axisLabels = {{
       x: 'PC1 ({pc1_pct:.1f}%)',
@@ -604,10 +412,6 @@ def _build_threejs_html(
     }}
 
     if (sceneTheme.layout === 'desmos') {{
-      const grid = new THREE.GridHelper(2.4, 12, sceneTheme.grid_major, sceneTheme.grid_minor);
-      grid.position.y = -1.05;
-      scene.add(grid);
-
       addAxisLine(new THREE.Vector3(1, 0, 0), sceneTheme.axis);
       addAxisLine(new THREE.Vector3(0, 1, 0), sceneTheme.axis);
       addAxisLine(new THREE.Vector3(0, 0, 1), sceneTheme.axis);
@@ -622,10 +426,6 @@ def _build_threejs_html(
       boxLines.position.y = -0.05;
       scene.add(boxLines);
     }} else {{
-      const grid = new THREE.GridHelper(2.2, 10, sceneTheme.grid_major, sceneTheme.grid_minor);
-      grid.position.y = -1.02;
-      scene.add(grid);
-
       const axes = new THREE.AxesHelper(1.15);
       axes.material.transparent = true;
       axes.material.opacity = 0.55;
@@ -657,6 +457,7 @@ def _build_threejs_html(
       players.filter((player) => player.selected_default).map((player) => player.id),
     );
     let pinnedPlayer = null;
+    let crownEnabled = true;
 
     function visiblePlayers() {{
       return players.filter((player) => selectedIds.has(player.id));
@@ -738,7 +539,7 @@ def _build_threejs_html(
       }}
       const cohortSize = visiblePlayers().length;
       const cohortRank = cohortImpactRank(player);
-      const crowned = isCohortImpactLeader(player);
+      const crowned = crownEnabled && isCohortImpactLeader(player);
       const bestBadge = crowned ? '<div class="crown-badge">👑 #1 overall impact (visible)</div>' : '';
       profilePanel.innerHTML = `
         <div class="profile-card ${{crowned ? 'is-crowned' : ''}}">
@@ -746,7 +547,8 @@ def _build_threejs_html(
           <h2>${{player.name}}</h2>
           <p class="profile-rank">Impact #${{cohortRank}} of ${{cohortSize}} visible · impact z ${{player.impact_z.toFixed(2)}} · all-pool #${{player.rank_impact}}</p>
           <p class="profile-meta">${{player.championships}} titles (${{player.max_consecutive_championships}}-peat max) · ${{player.playoff_seasons}} playoff yrs · perf ${{player.playoff_performance.toFixed(2)}} · clutch adj +${{player.clutch_penalty.toFixed(2)}}</p>
-          <p class="profile-rank">L2 #${{player.rank_l2}} · Mahalanobis #${{player.rank_mahalanobis}}</p>
+          <p class="profile-stats">L2: ${{player.score_l2.toFixed(2)}} (#${{player.rank_l2}}) · Mahalanobis: ${{player.score_mahalanobis.toFixed(2)}} (#${{player.rank_mahalanobis}})</p>
+          <p class="profile-stats">PC1: ${{player.pc1.toFixed(2)}}, PC2: ${{player.pc2.toFixed(2)}}, PC3: ${{player.pc3.toFixed(2)}}</p>
           ${{renderAspectRows(aspectsForVisible(player), cohortSize)}}
         </div>
       `;
@@ -759,7 +561,7 @@ def _build_threejs_html(
     function updateCrownVisuals() {{
       const leaderId = cohortImpactLeader()?.id ?? null;
       for (const [playerId, group] of orbGroups.entries()) {{
-        const showCrown = playerId === leaderId && selectedIds.has(playerId);
+        const showCrown = crownEnabled && playerId === leaderId && selectedIds.has(playerId);
         group.crownMeshes.forEach((mesh) => {{ mesh.visible = showCrown; }});
       }}
     }}
@@ -793,6 +595,18 @@ def _build_threejs_html(
           else selectedIds.delete(input.value);
           applySelection();
         }});
+      }});
+
+      document.getElementById('crown-toggle').addEventListener('click', () => {{
+        crownEnabled = !crownEnabled;
+        const btn = document.getElementById('crown-toggle');
+        btn.classList.toggle('active', crownEnabled);
+        updateCrownVisuals();
+        if (pinnedPlayer) {{
+          renderProfilePanel(pinnedPlayer);
+        }} else {{
+          renderProfilePanel(defaultBestPlayer());
+        }}
       }});
 
       document.getElementById('reset-default').addEventListener('click', () => {{
@@ -843,7 +657,7 @@ def _build_threejs_html(
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
 
-        const material = new THREE.MeshBasicMaterial({{ map: texture }});
+        const material = new THREE.MeshBasicMaterial({{ map: texture, transparent: true }});
         const orb = new THREE.Mesh(new THREE.SphereGeometry(player.radius, 48, 48), material);
         orb.position.copy(position);
         orb.userData = player;
@@ -909,7 +723,7 @@ def _build_threejs_html(
     function showTooltip(player, clientX, clientY) {{
       const cohortRank = cohortImpactRank(player);
       const cohortSize = visiblePlayers().length;
-      const crownNote = isCohortImpactLeader(player) ? '<br>👑 #1 impact (visible)' : '';
+      const crownNote = crownEnabled && isCohortImpactLeader(player) ? '<br>👑 #1 impact (visible)' : '';
       tooltip.innerHTML = `
         <strong>${{player.name}}</strong>${{crownNote}}<br>
         Impact: z=${{player.impact_z.toFixed(2)}} (#${{cohortRank}} of ${{cohortSize}} visible · #${{player.rank_impact}} all-pool)<br>
@@ -929,14 +743,14 @@ def _build_threejs_html(
       if (hits.length > 0) {{
         document.body.style.cursor = 'pointer';
         const active = hits[0].object.userData;
-        showTooltip(active, event.clientX, event.clientY);
         pinnedPlayer = active;
         renderProfilePanel(active);
-      }} else {{
+      }} else if (!alchemyMode) {{
         document.body.style.cursor = 'default';
-        tooltip.style.display = 'none';
         pinnedPlayer = null;
         renderProfilePanel(defaultBestPlayer());
+      }} else {{
+        document.body.style.cursor = 'default';
       }}
     }}
 
@@ -971,146 +785,25 @@ def render_embed_3d_html(paths: VizPaths, artifacts: VizArtifacts) -> Path:
     """Interactive 3D PCA embedding with photo-textured player orbs."""
     config = artifacts.config
     embed_cfg = config.get("embed_3d", {})
-    image_cfg = config.get("player_images", {})
-    scene = _embed_scene_theme(config)
+    scene = embed_scene_theme(config)
     disclaimer = config.get("captions", {}).get("exploratory_disclaimer", "")
+    alchemy_inline = bool(config.get("alchemy_inline", False))
 
     if not embed_cfg.get("enabled", True):
         raise ValueError("embed_3d is disabled in config/viz.yaml")
 
-    merged = _merge_coords_and_rankings(artifacts)
+    merged = merge_coords_and_rankings(artifacts)
     for col in ("PC1", "PC2", "PC3"):
         if col not in merged.columns:
             raise ValueError(f"pca_coordinates.csv missing {col} for 3D embedding")
 
-    pc1_pct = _variance_pct(artifacts.pca_explained_variance, "PC1")
-    pc2_pct = _variance_pct(artifacts.pca_explained_variance, "PC2")
-    pc3_pct = _variance_pct(artifacts.pca_explained_variance, "PC3")
-    cumulative_3d = _cumulative_3d_pct(artifacts.pca_explained_variance)
+    pc1_pct = variance_pct(artifacts.pca_explained_variance, "PC1")
+    pc2_pct = variance_pct(artifacts.pca_explained_variance, "PC2")
+    pc3_pct = variance_pct(artifacts.pca_explained_variance, "PC3")
+    cumulative_3d = cumulative_3d_pct(artifacts.pca_explained_variance)
 
-    x_lo, x_hi = _origin_inclusive_axis_range(merged["PC1"])
-    y_lo, y_hi = _origin_inclusive_axis_range(merged["PC2"])
-    z_lo, z_hi = _origin_inclusive_axis_range(merged["PC3"])
-
-    min_radius = float(embed_cfg.get("orb_radius_min", 0.08))
-    max_radius = float(embed_cfg.get("orb_radius_max", 0.16))
-
-    profiles = {}
-    if artifacts.career_vectors is not None:
-        profiles = compute_player_profiles(
-            artifacts.career_vectors,
-            artifacts.rankings,
-            config,
-        )
-
-    size_metric = embed_cfg.get("marker_size_metric", "impact_z")
-    if size_metric == "impact_z":
-        size_values = merged["player_id"].map(
-            lambda pid: float(profiles.get(str(pid), {}).get("impact_z", 0.0))
-        ).astype(float)
-    else:
-        size_values = merged[size_metric].astype(float)
-    size_min, size_max = float(size_values.min()), float(size_values.max())
-    size_span = max(size_max - size_min, 1e-6)
-
-
-    z_cols: list[str] = []
-    cv_lookup = None
-    if artifacts.career_vectors is not None:
-        z_cols = [c for c in artifacts.career_vectors.columns if c.endswith("_z")]
-        cv_lookup = artifacts.career_vectors.set_index("player_id")
-
-    alchemy_cfg_path = paths.goat_root / "config" / "alchemy.yaml"
-    alchemy_cfg = yaml.safe_load(alchemy_cfg_path.read_text(encoding="utf-8")) if alchemy_cfg_path.exists() else {}
-    alchemy_meta = {
-        "alpha": float(alchemy_cfg.get("blend", {}).get("alpha", 0.5)),
-        "beta": float(alchemy_cfg.get("blend", {}).get("beta", 0.5)),
-        "disclaimer": alchemy_cfg.get("framing", {}).get("disclaimer", ""),
-        "config_hash": "local",
-    }
-    cache_path = paths.modeling_output / "alchemy_cache.json"
-    if cache_path.exists():
-        cache_payload = json.loads(cache_path.read_text(encoding="utf-8"))
-        alchemy_meta["config_hash"] = cache_payload.get("config_hash", "local")
-
-    default_viz_ids = _default_viz_player_ids(paths, merged)
-
-    size_by_player = {
-        str(pid): float(val) for pid, val in zip(merged["player_id"], size_values, strict=True)
-    }
-
-    players: list[dict[str, Any]] = []
-    for row in merged.itertuples(index=False):
-        pid = str(row.player_id)
-        t = (size_by_player[pid] - size_min) / size_span
-        radius = min_radius + t * (max_radius - min_radius)
-        image_path = _ensure_player_image(
-            paths,
-            str(row.player_id),
-            str(row.display_name),
-            scene,
-            image_cfg,
-        )
-        players.append(
-            {
-                "id": row.player_id,
-                "name": row.display_name,
-                "x": _map_axis(float(row.PC1), x_lo, x_hi),
-                "y": _map_axis(float(row.PC2), y_lo, y_hi),
-                "z": _map_axis(float(row.PC3), z_lo, z_hi),
-                "pc1": float(row.PC1),
-                "pc2": float(row.PC2),
-                "pc3": float(row.PC3),
-                "radius": radius,
-                "image": _image_to_data_url(image_path),
-                "rank_pca": int(row.rank_pca_whitened_l2),
-                "rank_impact": int(profiles.get(str(row.player_id), {}).get("rank_impact", len(merged))),
-                "impact_z": float(profiles.get(str(row.player_id), {}).get("impact_z", 0.0)),
-                "rank_l2": int(row.rank_l2),
-                "rank_mahalanobis": int(row.rank_mahalanobis),
-                "score_l2": float(row.score_l2),
-                "score_mahalanobis": float(row.score_mahalanobis),
-                "score_pca": profiles.get(str(row.player_id), {}).get(
-                    "score_pca",
-                    float(row.score_pca_whitened_l2),
-                ),
-                "score_goat_index": profiles.get(str(row.player_id), {}).get(
-                    "score_goat_index",
-                    float(getattr(row, "score_goat_index", row.score_pca_whitened_l2)),
-                ),
-                "championships": profiles.get(str(row.player_id), {}).get(
-                    "championships", int(getattr(row, "championships", 0))
-                ),
-                "playoff_seasons": profiles.get(str(row.player_id), {}).get(
-                    "playoff_seasons", int(getattr(row, "playoff_seasons", 0))
-                ),
-                "playoff_performance": profiles.get(str(row.player_id), {}).get(
-                    "playoff_performance", float(getattr(row, "playoff_performance", 0.0))
-                ),
-                "stat_outlier_z": profiles.get(str(row.player_id), {}).get(
-                    "stat_outlier_z", float(getattr(row, "stat_outlier_z", 0.0))
-                ),
-                "team_strength_index": profiles.get(str(row.player_id), {}).get(
-                    "team_strength_index", float(getattr(row, "team_strength_index", 0.0))
-                ),
-                "clutch_penalty": profiles.get(str(row.player_id), {}).get(
-                    "clutch_penalty", float(getattr(row, "clutch_penalty", 0.0))
-                ),
-                "max_consecutive_championships": profiles.get(str(row.player_id), {}).get(
-                    "max_consecutive_championships", int(getattr(row, "max_consecutive_championships", 0))
-                ),
-                "repeat_titles_score": profiles.get(str(row.player_id), {}).get(
-                    "repeat_titles_score", float(getattr(row, "repeat_titles_score", 0.0))
-                ),
-                "is_impact_crown": profiles.get(str(row.player_id), {}).get(
-                    "is_impact_crown",
-                    False,
-                ),
-                "selected_default": str(row.player_id) in default_viz_ids,
-                "aspects": profiles.get(str(row.player_id), {}).get("aspects", []),
-                "z": cv_lookup.loc[pid, z_cols].tolist() if cv_lookup is not None and pid in cv_lookup.index and z_cols else [],
-            }
-        )
+    alchemy_meta = load_alchemy_meta(paths)
+    players = build_players_payload(paths, artifacts, scene=scene, merged=merged)
 
     html = _build_threejs_html(
         scene=scene,
@@ -1124,6 +817,7 @@ def render_embed_3d_html(paths: VizPaths, artifacts: VizArtifacts) -> Path:
         pool_size=len(players),
         default_count=sum(1 for player in players if player.get("selected_default")),
         alchemy_meta=alchemy_meta,
+        alchemy_inline=alchemy_inline,
     )
 
     out_path = paths.viz_output / "embed_3d.html"

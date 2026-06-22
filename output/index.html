@@ -3,119 +3,100 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GOAT Viz Output</title>
+  <title>GOAT Stat-Space Explorer</title>
   <style>
-    :root {
-      color-scheme: dark;
-    }
-    body {
-      margin: 0;
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0; width: 100%; height: 100%; overflow: hidden;
+      background: #0d1117; color: #e6edf3;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #site-app {
+      display: grid; grid-template-rows: auto minmax(0, 1fr);
+      width: 100%; height: 100%;
+    }
+    #site-nav {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid #30363d;
       background: #0d1117;
+      z-index: 10;
+    }
+    #site-brand {
+      font-size: 0.9rem; font-weight: 600; margin-right: 12px;
       color: #e6edf3;
-      line-height: 1.5;
     }
-    .page {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 40px 24px 64px;
+    .site-nav-btn {
+      padding: 7px 14px; border-radius: 999px;
+      border: 1px solid #30363d; background: #161b22; color: #e6edf3;
+      font-size: 0.82rem; cursor: pointer;
     }
-    h1, h2 {
-      text-align: center;
-      font-weight: 600;
+    .site-nav-btn:hover { border-color: #f97316; }
+    .site-nav-btn.active {
+      background: #f97316; color: #0d1117; border-color: #f97316; font-weight: 600;
     }
-    h1 {
-      margin-bottom: 8px;
-    }
-    .meta {
-      text-align: center;
-      margin: 0 auto 24px;
-      max-width: 760px;
-    }
-    .meta p {
-      margin: 8px 0;
-    }
-    a { color: #58a6ff; }
-    ul {
-      max-width: 520px;
-      margin: 0 auto 32px;
-      padding-left: 1.2rem;
-    }
-    .gallery {
-      display: grid;
-      gap: 40px;
-      margin-top: 24px;
-    }
-    .preview {
-      margin: 0;
-      text-align: center;
-    }
-    .preview img {
-      display: block;
-      width: min(100%, 980px);
-      height: auto;
-      margin: 12px auto 0;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-    }
-    figcaption {
-      color: #8b949e;
-      font-size: 0.95rem;
-    }
-    .muted { color: #8b949e; }
-    .center-copy { text-align: center; max-width: 760px; margin: 0 auto 16px; }
-    .embed-shell {
-      width: min(100%, 980px);
-      height: min(72vh, 720px);
-      margin: 0 auto 12px;
-      border: 1px solid #30363d;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #0d1117;
-    }
-    .embed-shell iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
-    }
-    details {
-      max-width: 760px;
-      margin: 32px auto 0;
-    }
-    pre {
-      overflow-x: auto;
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 12px;
+    #site-frame {
+      width: 100%; height: 100%; border: 0; display: block; background: #0d1117;
     }
   </style>
 </head>
 <body>
-  <main class="page">
-    <h1>GOAT Visualization</h1>
-    <div class="meta">
-      <p><strong>Publish gate:</strong> FAIL</p>
-      <p class="muted">Exploratory layout only. Gold crown = #1 overall impact among currently visible players (mean BPM/VORP/PER/WS z). Bar chart uses score_goat_index (PCA + team-weighted titles + clutch/consensus adjustment).</p>
-      <p class="muted">Era-adjusted z-scores; full-league baselines by season and position.</p>
-    </div>
-    <h2>Generated Files</h2>
-    <ul><li><a href="posts/goat_rankings.png">goat_rankings.png</a></li>
-<li><a href="posts/pca_scatter.png">pca_scatter.png</a></li>
-<li><a href="posts/similarity_heatmap.png">similarity_heatmap.png</a></li></ul>
-    
-    <h2>3D Stat-Space Explorer</h2>
-    <div class="embed-shell">
-      <iframe src="embed_3d.html" title="3D PCA embedding" loading="lazy"></iframe>
-    </div>
-    <p class="center-copy"><a href="embed_3d.html">Open full-screen 3D explorer</a></p>
+  <div id="site-app">
+    <nav id="site-nav" aria-label="Main">
+      <span id="site-brand">GOAT Explorer</span>
+      <button type="button" class="site-nav-btn" data-view="home">Overview</button>
+      <button type="button" class="site-nav-btn" data-view="how">How It Works</button>
+      <button type="button" class="site-nav-btn" data-view="explorer">3D Explorer</button>
+      <button type="button" class="site-nav-btn" data-view="alchemy">Alchemy Lab</button>
+      <button type="button" class="site-nav-btn" data-view="pca">PCA Map</button>
+    </nav>
+    <iframe id="site-frame" title="GOAT view" src="home.html"></iframe>
+  </div>
+  <script>
+    const VIEWS = {'home': 'home.html', 'how': 'how_it_works.html?embed=1', 'explorer': 'embed_3d.html?embed=1', 'alchemy': 'alchemy.html?embed=1', 'pca': 'pca_map.html?embed=1'};
+    const frame = document.getElementById('site-frame');
+    const buttons = document.querySelectorAll('.site-nav-btn');
+    let currentView = 'home';
 
-    <h2>Previews</h2>
-    <div class="gallery">
-      <figure class="preview"><figcaption>goat_rankings.png</figcaption><img src="posts/goat_rankings.png" alt="goat_rankings.png"></figure><figure class="preview"><figcaption>pca_scatter.png</figcaption><img src="posts/pca_scatter.png" alt="pca_scatter.png"></figure><figure class="preview"><figcaption>similarity_heatmap.png</figcaption><img src="posts/similarity_heatmap.png" alt="similarity_heatmap.png"></figure>
-    </div>
-    <details><summary>Validation report (optional)</summary><pre>{&#x27;validator&#x27;: &#x27;xgboost_award_alignment_v1&#x27;, &#x27;non_gating&#x27;: True, &#x27;split&#x27;: {&#x27;train_seasons_end&#x27;: 2014, &#x27;test_seasons_start&#x27;: 2015}, &#x27;primary_metrics&#x27;: {&#x27;test_sample_count&#x27;: 299, &#x27;mvp_vote_share&#x27;: {&#x27;metric&#x27;: &#x27;spearman&#x27;, &#x27;value&#x27;: 0.6717742139198041}, &#x27;all_nba_first&#x27;: {&#x27;metric&#x27;: &#x27;roc_auc&#x27;, &#x27;value&#x27;: 0.9244783556524447}}, &#x27;secondary_metrics&#x27;: {&#x27;career_goat_index_vs_mean_test_prediction_spearman&#x27;: 0.7046558704453442, &#x27;player_count&#x27;: 39}, &#x27;inputs&#x27;: {&#x27;season_vectors&#x27;: &#x27;GoatProject-data/processed/season_vectors.parquet&#x27;, &#x27;season_labels&#x27;: &#x27;GoatProject-data/processed/season_labels.parquet&#x27;, &#x27;goat_rankings&#x27;: &#x27;GoatProject-modeling/output/goat_rankings.csv&#x27;}}</pre></details>
-  </main>
+    function setView(view, { pushHash = true } = {}) {
+      if (!VIEWS[view]) view = 'home';
+      currentView = view;
+      const src = VIEWS[view];
+      if (frame.getAttribute('src') !== src) {
+        frame.src = src;
+      }
+      buttons.forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
+      if (pushHash) {
+        const next = view === 'home' ? '#home' : '#' + view;
+        if (location.hash !== next) history.pushState(null, '', next);
+      }
+      const activeBtn = [...buttons].find((b) => b.dataset.view === view);
+      document.title = 'GOAT — ' + (activeBtn ? activeBtn.textContent : 'Explorer');
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => setView(btn.dataset.view));
+    });
+
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'goat-nav' && event.data.view) {
+        setView(event.data.view);
+      }
+    });
+
+    frame.addEventListener('load', () => {
+      try { frame.contentWindow?.dispatchEvent(new Event('resize')); } catch (_) {}
+    });
+
+    function viewFromHash() {
+      const h = (location.hash || '#home').replace('#', '');
+      return VIEWS[h] ? h : 'home';
+    }
+
+    window.addEventListener('hashchange', () => setView(viewFromHash(), { pushHash: false }));
+    window.addEventListener('popstate', () => setView(viewFromHash(), { pushHash: false }));
+    setView(viewFromHash(), { pushHash: false });
+  </script>
 </body>
 </html>

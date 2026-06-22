@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GOAT Overview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.5;
+    }
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+    h1, h2 {
+      text-align: center;
+      font-weight: 600;
+    }
+    h1 {
+      margin-bottom: 8px;
+    }
+    .meta {
+      text-align: center;
+      margin: 0 auto 24px;
+      max-width: 760px;
+    }
+    .meta p {
+      margin: 8px 0;
+    }
+    a { color: #58a6ff; }
+    ul {
+      max-width: 520px;
+      margin: 0 auto 32px;
+      padding-left: 1.2rem;
+    }
+    .gallery {
+      display: grid;
+      gap: 40px;
+      margin-top: 24px;
+    }
+    .preview {
+      margin: 0;
+      text-align: center;
+    }
+    .preview-frame {
+      width: min(100%, 980px);
+      height: min(72vh, 800px);
+      margin: 12px auto 0;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0d1117;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-frame.preview-rankings {
+      width: min(100%, 1100px);
+      max-height: min(85vh, 900px);
+      height: auto;
+      min-height: 420px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: block;
+      padding: 0;
+    }
+    .preview-frame img {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      object-position: center center;
+    }
+    .preview-frame.preview-rankings img {
+      width: 100%;
+      max-width: 100%;
+      max-height: none;
+      height: auto;
+      object-fit: unset;
+    }
+    .preview-frame.preview-heatmap {
+      width: min(100%, 1100px);
+      max-height: min(92vh, 1100px);
+      height: auto;
+      min-height: 520px;
+      overflow: auto;
+      display: block;
+      padding: 0;
+    }
+    .preview-frame.preview-heatmap img {
+      width: 100%;
+      max-width: 100%;
+      max-height: none;
+      height: auto;
+      object-fit: unset;
+    }
+    .preview.preview-rankings .preview-chart,
+    .preview.preview-heatmap .preview-chart {
+      margin-bottom: 0;
+    }
+    .preview-description {
+      width: min(100%, 1100px);
+      margin: 16px auto 0;
+      padding: 14px 16px;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      background: #161b22;
+      text-align: left;
+      color: #8b949e;
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+    .preview-description p {
+      margin: 0 0 10px;
+    }
+    .preview-description p:last-child {
+      margin-bottom: 0;
+    }
+    figcaption {
+      color: #e6edf3;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .muted { color: #8b949e; }
+    .center-copy { text-align: center; max-width: 760px; margin: 0 auto 16px; }
+    .embed-shell {
+      width: min(100%, 980px);
+      height: min(72vh, 720px);
+      margin: 0 auto 12px;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0d1117;
+    }
+    .embed-shell iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    details {
+      max-width: 760px;
+      margin: 32px auto 0;
+    }
+    pre {
+      overflow-x: auto;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .validation-section {
+      margin-top: 40px;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 12px 16px 16px;
+      background: #161b22;
+    }
+    .validation-section summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #e6edf3;
+      list-style-position: outside;
+    }
+    .validation-section[open] summary {
+      margin-bottom: 12px;
+    }
+    .tab-bar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 16px 0 12px;
+    }
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid #484f58;
+      background: #21262d;
+      color: #e6edf3;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .tab-btn:hover {
+      border-color: #58a6ff;
+    }
+    .tab-btn.active {
+      background: #f97316;
+      color: #0d1117;
+      border-color: #f97316;
+      font-weight: 600;
+    }
+    .tab-panel {
+      display: none;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    .validation-scroll {
+      max-height: min(50vh, 420px);
+      overflow: auto;
+      padding: 2px;
+    }
+    .validation-scroll pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: visible;
+    }
+    pre.english {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+<h1>Overview</h1>
+    <div class="meta">
+      <p class="muted">Compare curated all-time players across rankings, maps, and blends. Open <strong>How It Works</strong> in the nav bar for the full math behind each model.</p>
+      <p class="muted">Era-adjusted z-scores; full-league baselines by season and position.</p>
+    </div>
+    <h2>Charts</h2>
+    <div class="gallery">
+      <figure class="preview preview-rankings"><figcaption>GOAT ranking</figcaption><div class="preview-chart preview-frame preview-rankings"><img src="posts/goat_rankings.png" alt="GOAT ranking" loading="lazy" /></div><div class="preview-description"><p>How to read: #1 at the top is the highest-ranked player on this chart. Each score blends career production, team success, and awards — not any one statistic. Use the rank order (#1, #2, …) to compare players; bar length is the composite number, not a simple quality meter.</p><p>Era-adjusted z-scores; full-league baselines by season and position.</p></div></figure><figure class="preview"><figcaption>PCA map (2D)</figcaption><div class="preview-frame"><img src="posts/pca_scatter.png" width="1400" height="1400" alt="PCA map (2D)" loading="lazy" /></div><div class="preview-description"><p>Each dot is one player along the two strongest stat-space axes (PC1 and PC2). Players near each other have similar profiles — this is not a better/worse chart.</p><p>Era-adjusted z-scores; full-league baselines by season and position.</p></div></figure><figure class="preview preview-heatmap"><figcaption>Play-style similarity</figcaption><div class="preview-chart preview-frame preview-heatmap"><img src="posts/similarity_heatmap.png" alt="Play-style similarity" loading="lazy" /></div><div class="preview-description"><p>Cell color shows how alike two players&#x27; stat profiles are (cosine similarity). Brighter red means more similar play style, not greater greatness.</p><p>Era-adjusted z-scores; full-league baselines by season and position.</p></div></figure>
+    </div>
+    
+    <details class="validation-section">
+      <summary>Model validation (optional)</summary>
+      <div class="tab-bar">
+        <button type="button" class="tab-btn active" data-tab="validation-english">Summary</button>
+        <button type="button" class="tab-btn" data-tab="validation-json">Raw JSON</button>
+      </div>
+      <div id="validation-english" class="tab-panel active validation-scroll">
+        <pre class="english">Validator: xgboost_award_alignment_v1
+This check is informational only — it does not gate publishing.
+Train seasons through 2014; test seasons from 2015 onward.
+
+Primary test metrics:
+  • Test seasons evaluated: 299
+  • MVP vote share alignment (Spearman): 0.672 (higher = model tracks MVP voting better)
+  • All-NBA 1st team detection (ROC AUC): 0.924 (1.0 = perfect separation)
+
+Secondary checks:
+  • Career GOAT index vs mean test prediction (Spearman): 0.730
+  • Players in career comparison: 39</pre>
+      </div>
+      <div id="validation-json" class="tab-panel validation-scroll">
+        <pre>{
+  &quot;validator&quot;: &quot;xgboost_award_alignment_v1&quot;,
+  &quot;non_gating&quot;: true,
+  &quot;split&quot;: {
+    &quot;train_seasons_end&quot;: 2014,
+    &quot;test_seasons_start&quot;: 2015
+  },
+  &quot;primary_metrics&quot;: {
+    &quot;test_sample_count&quot;: 299,
+    &quot;mvp_vote_share&quot;: {
+      &quot;metric&quot;: &quot;spearman&quot;,
+      &quot;value&quot;: 0.6717742139198041
+    },
+    &quot;all_nba_first&quot;: {
+      &quot;metric&quot;: &quot;roc_auc&quot;,
+      &quot;value&quot;: 0.9244783556524447
+    }
+  },
+  &quot;secondary_metrics&quot;: {
+    &quot;career_goat_index_vs_mean_test_prediction_spearman&quot;: 0.7301619433198381,
+    &quot;player_count&quot;: 39
+  },
+  &quot;inputs&quot;: {
+    &quot;season_vectors&quot;: &quot;GoatProject-data/processed/season_vectors.parquet&quot;,
+    &quot;season_labels&quot;: &quot;GoatProject-data/processed/season_labels.parquet&quot;,
+    &quot;goat_rankings&quot;: &quot;GoatProject-modeling/output/goat_rankings.csv&quot;
+  }
+}</pre>
+      </div>
+    </details>
+    <script>
+      (function () {
+        const section = document.querySelector('.validation-section');
+        if (!section) return;
+        section.querySelectorAll('.tab-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            section.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+            section.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+            btn.classList.add('active');
+            const panel = section.querySelector('#' + btn.dataset.tab);
+            if (panel) panel.classList.add('active');
+          });
+        });
+      })();
+    </script>
+  </main>
+</body>
+</html>

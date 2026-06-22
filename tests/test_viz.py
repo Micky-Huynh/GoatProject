@@ -105,6 +105,15 @@ def _write_minimum_files(goat_root: Path, include_sensitivity: bool = True) -> N
         encoding="utf-8",
     )
 
+    (goat_root / "GoatProject-modeling" / "output" / "validation_report.json").write_text(
+        json.dumps({
+            "validator": "test",
+            "non_gating": True,
+            "primary_metrics": {"test_sample_count": 10, "mvp_vote_share": {"value": 0.5}},
+        }),
+        encoding="utf-8",
+    )
+
     if include_sensitivity:
         (goat_root / "GoatProject-modeling" / "output" / "sensitivity_report.json").write_text(
             json.dumps({"publish_gate_pass": True}),
@@ -171,6 +180,8 @@ def test_render_outputs(tmp_path: Path) -> None:
     outputs = render_all(paths, artifacts)
 
     assert outputs["index_html"].exists()
+    assert outputs["home_html"].exists()
+    assert outputs["how_it_works"].exists()
     assert outputs["goat_rankings"].exists()
     assert outputs["pca_scatter"].exists()
     assert outputs["similarity_heatmap"].exists()
@@ -181,6 +192,48 @@ def test_render_outputs(tmp_path: Path) -> None:
     assert "profile-panel" in html
     assert "is_impact_crown" in html
     assert "cohortImpactLeader" in html
-    assert "alchemy-toggle" in html
-    assert "combinePlayers" in html
-    assert "embed_3d.html" in outputs["index_html"].read_text(encoding="utf-8")
+    assert 'id="alchemy-toggle"' not in html
+    assert outputs["alchemy"].exists()
+    assert outputs["pca_map"].exists()
+    pca_map_html = outputs["pca_map"].read_text(encoding="utf-8")
+    assert "pca-tooltip" in pca_map_html
+    assert "legend-toggle" in pca_map_html
+    assert "show-all-players" in pca_map_html
+    alchemy_html = outputs["alchemy"].read_text(encoding="utf-8")
+    shell_html = outputs["index_html"].read_text(encoding="utf-8")
+    index_html = outputs["home_html"].read_text(encoding="utf-8")
+    assert "alpha-slider" in alchemy_html
+    assert "combinePlayers" in alchemy_html
+    assert "focusBlendTrio" in alchemy_html
+    assert "panel-explore" in alchemy_html
+    assert "toggleAllPlayersPcaView" in alchemy_html
+    assert "resize-left" in alchemy_html
+    assert "math-modal" in alchemy_html
+    assert "math-explain-button" in alchemy_html
+    assert "renderMathWorkedExample" in alchemy_html
+    assert "show-all-players" in alchemy_html
+    assert "goatNavigate" in alchemy_html
+    for page_html in (html, alchemy_html):
+        mod_idx = page_html.find('<script type="module">')
+        import_idx = page_html.find("import * as THREE", mod_idx)
+        nav_idx = page_html.find("function goatNavigate")
+        assert nav_idx != -1 and mod_idx != -1 and import_idx != -1
+        assert nav_idx < mod_idx < import_idx
+    assert "site-nav" in shell_html
+    assert "site-frame" in shell_html
+    assert "home.html" in shell_html
+    assert "how_it_works.html" in shell_html
+    assert "How It Works" in shell_html
+    assert "validation-json" in index_html
+    assert "validation-english" in index_html
+    assert "how_it_works.html" not in index_html
+    assert "GOAT ranking" in index_html
+    assert "goat_rankings.png</figcaption>" not in index_html
+    assert ".tab-panel.active" in index_html
+    assert "display: none" in index_html
+    assert "preview-description" in index_html
+    assert "preview-chart" in index_html
+    how_html = outputs["how_it_works"].read_text(encoding="utf-8")
+    assert "score_goat_index" in how_html
+    assert "What it is and what it does" in how_html
+

@@ -1,0 +1,167 @@
+from __future__ import annotations
+
+from html import escape
+from pathlib import Path
+
+from .io import VizArtifacts, VizPaths
+from .site_shell import SITE_EMBED_HEAD, SITE_NAV_MESSAGE_JS
+
+
+def _player_colors(count: int) -> list[str]:
+    return [f"hsl({(i * 137.508) % 360:.1f}, 72%, 58%)" for i in range(count)]
+
+
+def render_pca_map_html(paths: VizPaths, artifacts: VizArtifacts) -> Path:
+    config = artifacts.config
+    theme = config.get("theme", {})
+    bg = theme.get("background", "#0d1117")
+    text = theme.get("text", "#e6edf3")
+    muted = "#8b949e"
+    accent = theme.get("accent", "#f97316")
+
+    coords = artifacts.pca_coordinates.copy()
+    pc1_col = "PC1" if "PC1" in coords.columns else "pc1"
+    pc2_col = "PC2" if "PC2" in coords.columns else "pc2"
+    if "display_name" not in coords.columns:
+        coords["display_name"] = coords.get("player_id", coords.index).astype(str)
+    coords = coords.sort_values("display_name")
+
+    names = coords["display_name"].astype(str).tolist()
+    x_vals = coords[pc1_col].astype(float).tolist()
+    y_vals = coords[pc2_col].astype(float).tolist()
+    colors = _player_colors(len(names))
+
+    cum_2d = artifacts.pca_explained_variance.get("cumulative_2d")
+    variance_line = (
+        f"PC1 + PC2 explain {float(cum_2d) * 100:.1f}% of variance."
+        if isinstance(cum_2d, (int, float)) else "See MATHS.md for variance shares."
+    )
+    captions = config.get("captions", {})
+    disclaimer = captions.get("exploratory_disclaimer", "")
+    era_line = captions.get("era_adjustment", "")
+
+    x_min, x_max = min(x_vals), max(x_vals)
+    y_min, y_max = min(y_vals), max(y_vals)
+    x_pad = max((x_max - x_min) * 0.12, 0.4)
+    y_pad = max((y_max - y_min) * 0.12, 0.4)
+    plot_x_min, plot_x_max = x_min - x_pad, x_max + x_pad
+    plot_y_min, plot_y_max = y_min - y_pad, y_max + y_pad
+
+    def to_svg_x(x: float) -> float:
+        return 40 + (x - plot_x_min) / max(plot_x_max - plot_x_min, 1e-9) * 720
+
+    def to_svg_y(y: float) -> float:
+        return 20 + (plot_y_max - y) / max(plot_y_max - plot_y_min, 1e-9) * 520
+
+    dots_svg, legend_items = [], []
+    for name, x, y, color in zip(names, x_vals, y_vals, colors):
+        cx, cy = to_svg_x(x), to_svg_y(y)
+        safe = escape(name)
+        dots_svg.append(
+            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="5.5" fill="{color}" stroke="{text}" '
+            f'stroke-width="0.6" data-name="{safe.lower()}" class="pca-dot"><title>{safe}</title></circle>'
+        )
+        legend_items.append(
+            f'<div class="legend-row" data-name="{safe.lower()}">'
+            f'<span class="swatch" style="background:{color}"></span>'
+            f'<span class="legend-name">{safe}</span>'
+            f'<span class="legend-coords">({x:.2f}, {y:.2f})</span></div>'
+        )
+
+    grid_lines = []
+    if plot_x_min <= 0 <= plot_x_max:
+        zx = to_svg_x(0)
+        grid_lines.append(f'<line x1="{zx:.1f}" y1="20" x2="{zx:.1f}" y2="540" stroke="{text}" stroke-opacity="0.15"/>')
+    if plot_y_min <= 0 <= plot_y_max:
+        zy = to_svg_y(0)
+        grid_lines.append(f'<line x1="40" y1="{zy:.1f}" x2="760" y2="{zy:.1f}" stroke="{text}" stroke-opacity="0.15"/>')
+
+    embed_head = SITE_EMBED_HEAD
+    nav_js = SITE_NAV_MESSAGE_JS
+    html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PCA Map — GOAT Viz</title>
+{embed_head}
+  <style>
+    html, body {{ margin: 0; background: {bg}; color: {text}; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
+    #app {{ display: grid; grid-template-columns: minmax(0, 1fr) min(280px, 32vw); min-height: 100vh; }}
+    #main {{ padding: 20px 16px 24px; display: flex; flex-direction: column; min-width: 0; }}
+    header {{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }}
+    header h1 {{ margin: 0; font-size: 1.1rem; font-weight: 600; }}
+    header a {{ color: {accent}; text-decoration: none; font-size: 0.85rem; }}
+    .explain {{ background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; font-size: 0.82rem; line-height: 1.55; color: {muted}; }}
+    .explain strong {{ color: {text}; }}
+    .explain ul {{ margin: 8px 0 0; padding-left: 1.2rem; }}
+    .plot-wrap {{ border: 1px solid #30363d; border-radius: 10px; background: #0d1117; overflow: hidden; }}
+    svg {{ width: 100%; height: auto; display: block; }}
+    #legend-panel {{ border-left: 1px solid #30363d; display: flex; flex-direction: column; min-height: 0; background: {bg}; }}
+    #legend-panel h2 {{ margin: 0; padding: 14px 14px 8px; font-size: 0.9rem; font-weight: 600; }}
+    #legend-search {{ margin: 0 14px 8px; padding: 7px 10px; border-radius: 8px; border: 1px solid #30363d; background: {bg}; color: {text}; width: calc(100% - 28px); box-sizing: border-box; font-size: 0.8rem; }}
+    #legend-list {{ overflow-y: auto; flex: 1; padding: 0 10px 14px; min-height: 0; max-height: calc(100vh - 120px); }}
+    .legend-row {{ display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; padding: 5px 6px; border-radius: 6px; font-size: 0.76rem; cursor: pointer; }}
+    .legend-row:hover, .legend-row.active {{ background: rgba(249, 115, 22, 0.12); }}
+    .swatch {{ width: 12px; height: 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.35); }}
+    .legend-name {{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+    .legend-coords {{ color: {muted}; font-size: 0.7rem; white-space: nowrap; }}
+    .pca-dot.highlight {{ stroke: {accent}; stroke-width: 2.2; }}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="main">
+      <header><h1>PCA map of career vectors</h1></header>
+      <div class="explain">
+        <strong>How to read this chart</strong>
+        <ul>
+          <li>Each colored dot is one allowlist player at (PC1, PC2).</li>
+          <li><strong>PC1</strong> (horizontal) ≈ impact; <strong>PC2</strong> (vertical) ≈ style mix.</li>
+          <li>{escape(variance_line)}</li>
+          <li>Distance from center is not the GOAT index — exploratory layout only.</li>
+        </ul>
+        <p style="margin:10px 0 0;">{escape(disclaimer)}</p>
+        <p style="margin:6px 0 0;">{escape(era_line)}</p>
+      </div>
+      <div class="plot-wrap">
+        <svg viewBox="0 0 800 560" role="img" aria-label="PCA scatter plot">
+          <rect width="800" height="560" fill="{bg}"/>
+          {''.join(grid_lines)}
+          <text x="400" y="555" fill="{muted}" font-size="11" text-anchor="middle">PC1 →</text>
+          <text x="12" y="290" fill="{muted}" font-size="11" text-anchor="middle" transform="rotate(-90 12 290)">PC2 →</text>
+          {''.join(dots_svg)}
+        </svg>
+      </div>
+    </div>
+    <aside id="legend-panel">
+      <h2>Players ({len(names)})</h2>
+      <input id="legend-search" type="search" placeholder="Filter legend..." />
+      <div id="legend-list">{''.join(legend_items)}</div>
+    </aside>
+  </div>
+  <script>
+    const rows = document.querySelectorAll('.legend-row');
+    const dots = document.querySelectorAll('.pca-dot');
+    document.getElementById('legend-search').addEventListener('input', (e) => {{
+      const q = e.target.value.trim().toLowerCase();
+      rows.forEach((row) => {{ row.style.display = row.dataset.name.includes(q) ? 'grid' : 'none'; }});
+    }});
+    rows.forEach((row) => {{
+      row.addEventListener('mouseenter', () => {{
+        const name = row.dataset.name;
+        dots.forEach((d) => d.classList.toggle('highlight', d.dataset.name === name));
+        row.classList.add('active');
+      }});
+      row.addEventListener('mouseleave', () => {{
+        dots.forEach((d) => d.classList.remove('highlight'));
+        row.classList.remove('active');
+      }});
+    }});
+  </script>
+{nav_js}
+</body>
+</html>"""
+    out_path = paths.viz_output / "pca_map.html"
+    out_path.write_text(html, encoding="utf-8")
+    return out_path

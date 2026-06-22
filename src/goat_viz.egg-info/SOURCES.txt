@@ -1,10 +1,14 @@
 README.md
 pyproject.toml
 src/goat_viz/__init__.py
+src/goat_viz/alchemy_js.py
+src/goat_viz/alchemy_page.py
 src/goat_viz/embed_3d.py
 src/goat_viz/io.py
+src/goat_viz/profiles.py
 src/goat_viz/render.py
 src/goat_viz/run_viz.py
+src/goat_viz/scene_shared.py
 src/goat_viz.egg-info/PKG-INFO
 src/goat_viz.egg-info/SOURCES.txt
 src/goat_viz.egg-info/dependency_links.txt

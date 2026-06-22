@@ -61,6 +61,15 @@ def compute_player_profiles(
     rank_lookup = rank_frame.set_index("player_id")
 
     rank_indexed = rank_frame.set_index("player_id")
+    if "showman_z" in career.columns and "showman" not in aspects:
+        aspects = {
+            **aspects,
+            "showman": {
+                "label": "Showman",
+                "features": ["showman_z"],
+            },
+        }
+
     aspect_scores: dict[str, pd.Series] = {}
     aspect_display: dict[str, pd.Series] = {}
     aspect_ranks: dict[str, pd.Series] = {}
