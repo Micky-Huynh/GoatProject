@@ -699,16 +699,54 @@ Every exploratory chart includes:
 Machine-readable theme, export sizes, pizza/radar feature subsets, optional UMAP flag. See file for defaults (`profile_features`, `post_formats`, `optional` blocks).
 
 
-### 9.10 Alchemy Mode (v2.1)
+### 9.10 Alchemy Lab (v2.1)
 
-Interactive Infinite-Alchemy-style merge in `embed_3d.html`:
+Dedicated **Alchemy Lab** page (`GoatProject-viz/output/alchemy.html`) — Infinite-Alchemy-style player blend and nearest-neighbor discovery. **Not** inline in the 3D explorer.
 
-- Toggle **Alchemy mode**, click two orbs: blend $C(u,v)=0.5u+0.5v$ in $\mathbb{R}^{11}$, then nearest-neighbor discovery $D(w)$
-- Server cache: `output/alchemy_cache.json` (`goat_model/combine.py`)
-- Client cache: localStorage keyed by sorted player_id pair + config_hash
-- Config: `config/alchemy.yaml`
+#### Locked decisions (2026-06-21)
 
-**Epistemic rule:** Alchemy is exploratory; never caption discovery as score_goat_index or objective GOAT truth.
+| # | Decision |
+|---|----------|
+| 1 | Showman + shot zones **alchemy-only** — excluded from `feature_columns` / ranking geometry (§7.0.1 stays $\mathbb{R}^{11}$) |
+| 2 | Alchemy Lab: **α slider** + collapsible math side panel |
+| 3 | Legacy showmen: **elevated All-Star weight** in partial profile (`showman_partial=true`) |
+| 4 | **PC-lerp animation** + **Skip animation** checkbox for snap |
+| 5 | **Reweight, don't impute** missing dunk/and1; partial badge in result panel |
+
+See `plans/domain-decisions.md` and `MATHS.md` §13 for formulas.
+
+#### Vector space
+
+- **Ranking:** `manifest.feature_columns` — 11 core z-scores (unchanged)
+- **Alchemy:** `manifest.alchemy_feature_columns` — 18 dims (11 core + `showman_z` + 6 zone z)
+- **Combine:** $C(\mathbf{u},\mathbf{v}) = \alpha\mathbf{u} + (1-\alpha)\mathbf{v}$ in $\mathbb{R}^{18}$; $\alpha$ from UI slider (default 0.5)
+- **Discovery:** $D(\mathbf{w}) = \arg\min_{p} \|\mathbf{w} - \mathbf{z}_p\|_2$ in $\mathbb{R}^{18}$
+- **Display vs distance:** orb positions = PCA of 11-dim core; NN L2 = 18-dim alchemy — UI labels both
+
+#### UI (`alchemy_page.py`)
+
+| Element | Behavior |
+|---------|----------|
+| Player pickers | Searchable A/B (reuse explorer picker pattern) |
+| α slider | Updates blend; math panel explains $\alpha\mathbf{u} + (1-\alpha)\mathbf{v}$ |
+| Blend | PC-lerp ghost orb A→B (~800 ms) |
+| Skip animation | Checkbox → snap to NN highlight |
+| Result panel | Discovery label, L2 in $\mathbb{R}^{18}$, zone metadata when available, `showman_partial` badge |
+| Inline ⚗ | **Removed** from `embed_3d.html` when `alchemy_inline: false` (`config/viz.yaml`) |
+
+#### Config and cache
+
+| File | Role |
+|------|------|
+| `config/alchemy.yaml` | v2.0.0, R¹⁸ disclaimer, default α |
+| `config/showman.yaml` | Full vs `legacy_partial` showman weights |
+| `config/scoring_zones.yaml` | Zone column map, corner3 derivation |
+| `config/viz.yaml` | `alchemy_inline: false`, `alchemy_page.enabled: true` |
+| `output/alchemy_cache.json` | Pair cache, schema `2.0.0`, dim 18 (`goat_model/combine.py`) |
+
+Client cache: localStorage keyed by sorted `player_id` pair + α + config hash.
+
+**Epistemic rule:** Alchemy is exploratory; never caption discovery as `score_goat_index` or objective GOAT truth.
 
 ---
 

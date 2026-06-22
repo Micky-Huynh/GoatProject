@@ -6,6 +6,36 @@ An exploratory ranking and visualization project for comparing **100 curated all
 
 ---
 
+## Clone and run (checkpoint)
+
+Fresh clone — three commands:
+
+```bash
+git clone https://github.com/Micky-Huynh/GoatProject.git
+cd GoatProject
+./bootstrap.sh && ./open.sh
+```
+
+**What `bootstrap.sh` does:**
+
+1. Adds git worktrees (`GoatProject-data`, `GoatProject-modeling`, `GoatProject-viz`)
+2. Installs Python packages (`pip install -e .[dev]` in each worktree)
+3. Verifies the **checkpoint** (`checkpoint.yaml`) — pre-built CSVs, parquet, rankings, and HTML on the `data` / `modeling` / `viz` branches
+
+**Requirements:** Python **3.11+**, git, pip.
+
+| Script | Purpose |
+|--------|---------|
+| `./bootstrap.sh` | First-time setup after clone |
+| `./open.sh` | Open `index.html` in browser (`./open.sh alchemy` for Alchemy Lab) |
+| `./run.sh` | Full rebuild from raw CSVs (~10+ min) |
+| `./scripts/verify_checkpoint.py` | Check artifacts only |
+| `./scripts/refresh_checkpoint.sh` | Maintainer: rebuild + commit checklist |
+
+Checkpoint contract: **v2.0.0 (alchemy-v2)** — 100 players, R¹⁸ alchemy cache, `alchemy.html` included. See `checkpoint.yaml`.
+
+---
+
 ## Quick start (view only)
 
 If outputs are already built, open the visualization bundle in a browser:
@@ -16,6 +46,13 @@ GoatProject-viz/output/index.html
 
 The **3D embed** (`embed_3d.html`) is the main interactive view: rotate the PCA space, pick players, and hover orbs for skill breakdowns.
 
+The **Alchemy Lab** (`alchemy.html`) is a separate page for blending two players and discovering the nearest allowlist match in R¹⁸ stat space:
+
+```bash
+open GoatProject-viz/output/alchemy.html
+# or from index.html → "Alchemy Lab" link
+```
+
 ---
 
 ## What you get
@@ -24,6 +61,7 @@ The **3D embed** (`embed_3d.html`) is the main interactive view: rotate the PCA 
 |--------|----------|---------|
 | Interactive index | `GoatProject-viz/output/index.html` | Links to all charts |
 | 3D PCA explorer | `GoatProject-viz/output/embed_3d.html` | Photo orbs in PC1–PC3 space, player picker, impact crown |
+| Alchemy Lab | `GoatProject-viz/output/alchemy.html` | Blend two players (α slider), PC-lerp animation, nearest-neighbor discovery in R¹⁸ |
 | Bar chart leaderboard | `GoatProject-viz/output/posts/goat_rankings.png` | Sorted by `score_goat_index` |
 | PCA scatter | `GoatProject-viz/output/posts/pca_scatter.png` | Static 2D PCA view |
 | Similarity heatmap | `GoatProject-viz/output/posts/similarity_heatmap.png` | Cosine similarity between careers |
@@ -133,6 +171,34 @@ cd ../GoatProject-viz && pytest
 
 ---
 
+
+## Alchemy Lab (`alchemy.html`)
+
+Infinite-Alchemy-style **exploratory** player merge — separate from GOAT rank and from the 3D explorer (inline alchemy is disabled; `config/viz.yaml` → `alchemy_inline: false`).
+
+### How to open
+
+After `./run.sh` or `python -m goat_viz.run_viz`:
+
+```bash
+open GoatProject-viz/output/alchemy.html
+```
+
+Or open `GoatProject-viz/output/index.html` and follow the **Alchemy Lab** link.
+
+### What it does
+
+1. **Pick player A and B** — searchable dropdowns (same pool as the 100-player allowlist).
+2. **Adjust α** — slider controls the blend $C(\mathbf{u},\mathbf{v}) = \alpha\mathbf{u} + (1-\alpha)\mathbf{v}$ in **R¹⁸** (11 core stats + showman excitement + 6 shot-zone z-scores). Default α = 0.5.
+3. **Blend** — ghost orb animates along a PC-lerp path between A and B display positions (~800 ms). Check **Skip animation** to snap directly to the result.
+4. **Discovery** — highlights the nearest allowlist player by **L2 distance in R¹⁸** (not the same as visual orb proximity on the 11-dim PCA map).
+5. **Math panel** — collapsible walkthrough of the blend formula and dimensions.
+6. **Partial badge** — when either parent has `showman_partial=true` (legacy players missing dunk/and-1 data), a badge explains the reweighted showman profile.
+
+**Important:** Core rankings (`score_goat_index`, L2, Mahalanobis) still use **11 dimensions only**. Showman and shot zones affect alchemy discovery, not the bar chart or crown.
+
+Formulas: `MATHS.md` §13. Design: `ARCHITECTURE.md` §9.10.
+
 ## Visualization guide
 
 All charts are linked from `GoatProject-viz/output/index.html`. Formulas and notation are in **`MATHS.md`**.
@@ -207,7 +273,10 @@ The repo uses **git worktrees** for `data`, `modeling`, and `viz`. Commit change
 | `config/features.yaml` | Stat features and orientation |
 | `config/scoring.yaml` | L2 / Mahalanobis / PCA weights and framing |
 | `config/playoffs.yaml` | Titles, playoff depth, clutch penalty, repeat-title bonuses |
-| `config/viz.yaml` | Colors, orb sizes, skill aspects, captions |
+| `config/viz.yaml` | Colors, orb sizes, skill aspects, captions, `alchemy_inline` / `alchemy_page` |
+| `config/alchemy.yaml` | Alchemy cache version, default α, R¹⁸ disclaimer |
+| `config/showman.yaml` | Showman excitement weights (full vs legacy partial) |
+| `config/scoring_zones.yaml` | Shot-zone column map and corner-3 derivation |
 
 After config changes, re-run the pipeline steps above.
 

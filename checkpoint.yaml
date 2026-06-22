@@ -1,0 +1,49 @@
+# GoatProject checkpoint manifest — used by scripts/verify_checkpoint.py
+# Maintainers: after ./run.sh, commit artifacts on data / modeling / viz branches
+# and bump version here when the checkpoint contract changes.
+
+version: "2.0.0"
+label: alchemy-v2
+min_python: "3.11"
+
+branches:
+  data: data
+  modeling: modeling
+  viz: viz
+
+worktrees:
+  - path: GoatProject-data
+    branch: data
+  - path: GoatProject-modeling
+    branch: modeling
+  - path: GoatProject-viz
+    branch: viz
+
+required_files:
+  - GoatProject-data/data/Advanced.csv
+  - GoatProject-data/processed/manifest.json
+  - GoatProject-data/processed/career_vectors.parquet
+  - GoatProject-data/processed/season_vectors.parquet
+  - GoatProject-modeling/output/goat_rankings.csv
+  - GoatProject-modeling/output/alchemy_cache.json
+  - GoatProject-modeling/output/pca_coordinates.csv
+  - GoatProject-viz/output/index.html
+  - GoatProject-viz/output/embed_3d.html
+  - GoatProject-viz/output/alchemy.html
+
+manifest_checks:
+  player_count_min: 100
+  alchemy_feature_columns_count: 18
+  feature_columns_count: 11
+
+alchemy_cache_checks:
+  schema_version: "2.0.0"
+  feature_dimension: 18
+  min_pair_entries: 4000
+
+config_files:
+  - config/allowlist.yaml
+  - config/alchemy.yaml
+  - config/showman.yaml
+  - config/scoring_zones.yaml
+  - config/viz.yaml

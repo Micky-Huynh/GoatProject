@@ -275,15 +275,101 @@ See `README.md` → **Visualization guide** for how to read the 2D and 3D plots.
 
 ## 13. Alchemy Mode (vector blend + discovery)
 
-Separate from GOAT rank. Two layers:
+Separate from GOAT rank and from §2–§9 ranking geometry. Alchemy uses an **extended** vector space; core rankings stay on the 11-dim `feature_columns` only.
 
-1. **Ambient space** $V = \mathbb{R}^{11}$ — satisfies all 8 vector-space axioms.
-2. **Combine** $C(u,v) = 0.5\,u + 0.5\,v$ on career z-vectors — linear in $V$, not player addition.
-3. **Discovery** $D(w) = \arg\min_i \| \bar{z}_i - w \|_2$ over the allowlist.
+### 13.1 Two vector spaces (do not conflate)
 
-Cached pair results: `GoatProject-modeling/output/alchemy_cache.json` (server) and browser localStorage (3D embed).
+| Space | Dimension | Used for |
+|-------|-----------|----------|
+| **Ranking geometry** | $\mathbb{R}^{11}$ | L2, Mahalanobis, PCA-whitened L2, `score_goat_index`, 3D orb positions |
+| **Alchemy blend + NN** | $\mathbb{R}^{18}$ | Combine $C$, discovery $D$, L2 distance in Alchemy Lab |
 
-**Not GOAT rank.** Interactive flow: toggle Alchemy mode, click two orbs, see nearest-neighbor discovery.
+Manifest fields: `feature_columns` (11 core) and `alchemy_feature_columns` (18 = 11 core + 7 alchemy-only). Showman and shot zones are **never** added to ranking scores.
+
+**Alchemy extensions (7 dimensions):**
+
+| Column | Meaning |
+|--------|---------|
+| `showman_z` | Era-adjusted excitement composite (see §13.2) |
+| `zone_0_3_z` | Share of FGA from 0–3 ft (z-scored) |
+| `zone_3_10_z` | Share from 3–10 ft |
+| `zone_10_16_z` | Share from 10–16 ft |
+| `zone_16_3p_z` | Share from 16 ft to 3P line |
+| `zone_3p_z` | Share from beyond 3P |
+| `zone_corner3_z` | Derived corner-3 share (`corner3_of_3pa × 3p_range`) |
+
+Zone z-scores are **independent axes** (not constrained to sum to 1 in z-space). Raw zone shares sum ≈ 1.0 per player-season before z-scoring.
+
+### 13.2 Showman score
+
+Season-level components (era-adjusted z within `(season, position)` groups, same ladder as §3):
+
+| Component | Source | Full weight |
+|-----------|--------|-------------|
+| Dunk frequency | `Player Play By Play.csv` | 30% |
+| And-1 rate (and1 / FGA) | PBP + `Player Totals.csv` | 25% |
+| All-Star selection rate | `All-Star Selections.csv` | 25% |
+| MVP vote share (peak season) | Award shares | 15% |
+| Heave rate (heave / FGA) | PBP + totals | 5% |
+
+Career `showman_z` = weighted mean of available component z-scores (MVP uses peak share, then allowlist z-score).
+
+**Full profile** (all components available):
+
+\[
+\text{showman\_z} = 0.30\,z_{\text{dunk}} + 0.25\,z_{\text{and1}} + 0.25\,z_{\text{ASG}} + 0.15\,z_{\text{MVP}} + 0.05\,z_{\text{heave}}
+\]
+
+**Legacy partial profile** (`showman_partial = true`): when any qualifying season lacks reliable dunk or and-1 data (typical pre-1979), **reweight — do not impute**. Dunk and and-1 are excluded; remaining weights renormalize to 1.0:
+
+| Component | Legacy partial weight |
+|-----------|----------------------|
+| All-Star rate | 45% |
+| MVP share (peak) | 25% |
+| Heave rate | 5% (if present; otherwise renormalize among available) |
+
+Partial players never receive imputed dunk/and-1 at $z = 0$. The Alchemy Lab surfaces a `showman_partial` badge when either parent has the flag.
+
+Weights: `config/showman.yaml`. Zones: `config/scoring_zones.yaml`.
+
+### 13.3 Operators
+
+Let $\mathbf{u}, \mathbf{v} \in \mathbb{R}^{18}$ be alchemy career vectors for players A and B. Slider $\alpha \in [0,1]$, $\beta = 1 - \alpha$ (default $\alpha = 0.5$ per `config/alchemy.yaml`).
+
+1. **Combine** — convex blend in $\mathbb{R}^{18}$:
+
+\[
+C(\mathbf{u}, \mathbf{v}) = \alpha\,\mathbf{u} + \beta\,\mathbf{v}
+\]
+
+Linear in the ambient space; **not** player addition on the allowlist.
+
+2. **Discovery** — nearest neighbor by L2 in $\mathbb{R}^{18}$:
+
+\[
+D(\mathbf{w}) = \arg\min_{p \in E_{\text{allow}}} \| \mathbf{w} - \mathbf{z}_p \|_2
+\]
+
+where $\mathbf{z}_p$ uses `alchemy_feature_columns` only.
+
+### 13.4 Display vs distance (dual labels)
+
+| What | Space | Notes |
+|------|-------|-------|
+| Orb positions on screen | PCA of **11-dim core** | Same 3D layout as `embed_3d.html` |
+| Ghost-orb blend animation | PC-lerp between A and B display positions | ~800 ms; **Skip animation** snaps to result |
+| Nearest-neighbor L2 | **18-dim** alchemy vector | Authoritative discovery metric |
+
+UI must label both: animation is honest for convex combination in **display** space; NN distance is computed in **full alchemy** space.
+
+### 13.5 Artifacts and UI
+
+- **Page:** `GoatProject-viz/output/alchemy.html` (Alchemy Lab) — linked from `index.html`
+- **Inline alchemy:** disabled in `embed_3d.html` when `alchemy_inline: false` (`config/viz.yaml`)
+- **Server cache:** `GoatProject-modeling/output/alchemy_cache.json` (schema `2.0.0`, dim 18)
+- **Client cache:** localStorage keyed by sorted player pair + $\alpha$ + config hash
+
+**Not GOAT rank.** Discovery labels the nearest allowlist player to a hypothetical blend — exploratory only.
 
 ## 14. Important limitations (mathematical, not bugs)
 

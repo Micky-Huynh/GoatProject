@@ -1,0 +1,31 @@
+version: "1.0.0"
+source_file: Player Shooting.csv
+zones:
+  zone_0_3:
+    column: percent_fga_from_x0_3_range
+    share_column: zone_0_3_share
+    z_column: zone_0_3_z
+  zone_3_10:
+    column: percent_fga_from_x3_10_range
+    share_column: zone_3_10_share
+    z_column: zone_3_10_z
+  zone_10_16:
+    column: percent_fga_from_x10_16_range
+    share_column: zone_10_16_share
+    z_column: zone_10_16_z
+  zone_16_3p:
+    column: percent_fga_from_x16_3p_range
+    share_column: zone_16_3p_share
+    z_column: zone_16_3p_z
+  zone_3p:
+    column: percent_fga_from_x3p_range
+    share_column: zone_3p_share
+    z_column: zone_3p_z
+  zone_corner3:
+    derived: true
+    formula: percent_corner_3s_of_3pa * percent_fga_from_x3p_range
+    inputs:
+      corner_share: percent_corner_3s_of_3pa
+      three_point_range: percent_fga_from_x3p_range
+    share_column: zone_corner3_share
+    z_column: zone_corner3_z

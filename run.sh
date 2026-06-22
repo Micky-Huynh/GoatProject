@@ -12,8 +12,8 @@ fi
 
 echo "GOAT_ROOT=$GOAT_ROOT"
 echo "Using: $PYTHON"
+echo "Tip: after clone use ./bootstrap.sh (not ./run.sh) unless rebuilding from CSVs."
 echo ""
-
 echo "==> Data pipeline"
 (cd "$ROOT/GoatProject-data" && "$PYTHON" -m goat_data.run_pipeline)
 
@@ -23,11 +23,11 @@ echo "==> Rankings"
 
 echo ""
 echo "==> Analysis (PCA, similarity)"
+(cd "$ROOT/GoatProject-modeling" && "$PYTHON" -m goat_model.run_analysis)
+
 echo ""
 echo "==> Alchemy cache"
 (cd "$ROOT/GoatProject-modeling" && PYTHONPATH=src "$PYTHON" -m goat_model.run_alchemy)
-
-(cd "$ROOT/GoatProject-modeling" && "$PYTHON" -m goat_model.run_analysis)
 
 echo ""
 echo "==> Visualization"

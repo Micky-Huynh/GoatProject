@@ -95,3 +95,9 @@ profile_features:
 captions:
   exploratory_disclaimer: "Exploratory layout only. Gold crown = #1 overall impact among currently visible players (mean BPM/VORP/PER/WS z). Bar chart uses score_goat_index (PCA + team-weighted titles + clutch/consensus adjustment)."
   era_adjustment: "Era-adjusted z-scores; full-league baselines by season and position."
+
+alchemy_inline: false
+
+alchemy_page:
+  enabled: true
+

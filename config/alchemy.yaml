@@ -1,4 +1,4 @@
-version: "1.0.0"
+version: "2.0.0"
 blend:
   alpha: 0.5
   beta: 0.5
@@ -7,4 +7,4 @@ discovery:
 cache:
   artifact: alchemy_cache.json
 framing:
-  disclaimer: Alchemy merge is a 50/50 stat-vector blend in R^11 mapped to the nearest allowlist player. Exploratory — not GOAT rank.
+  disclaimer: Alchemy merge is a 50/50 stat-vector blend in R^18 (11 core + showman + 6 shot zones) mapped to the nearest allowlist player via L2. Exploratory — not GOAT rank.

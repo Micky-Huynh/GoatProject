@@ -1,0 +1,22 @@
+version: "1.0.0"
+weights:
+  full:
+    dunk_freq: 0.30
+    and1_rate: 0.25
+    all_star_rate: 0.25
+    mvp_share_peak: 0.15
+    heave_rate: 0.05
+  legacy_partial:
+    all_star_rate: 0.45
+    mvp_share_peak: 0.25
+    heave_rate: 0.05
+data_availability:
+  legacy_partial_when:
+    - dunk_freq_unavailable
+    - and1_rate_unavailable
+  scope: any_qualifying_season
+sources:
+  shooting: Player Shooting.csv
+  play_by_play: Player Play By Play.csv
+  totals: Player Totals.csv
+  all_star: All-Star Selections.csv
