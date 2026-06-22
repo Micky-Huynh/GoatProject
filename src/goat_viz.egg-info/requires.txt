@@ -1,8 +1,0 @@
-matplotlib>=3.8
-pandas>=2.2
-plotly>=5.22
-seaborn>=0.13
-PyYAML>=6.0
-
-[dev]
-pytest>=8.2
